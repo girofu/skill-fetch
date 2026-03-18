@@ -93,3 +93,50 @@ GitHub-sourced skills are not platform-reviewed. Scan before installation:
 
 Install anyway? Reply "confirm install" or "skip".
 ```
+
+## Cross-Platform Considerations
+
+### Tool Name Adaptation
+
+When outputting instructions to the user, use generic descriptions rather than platform-specific tool names:
+
+- Instead of "Use the Read tool" → "Read the file"
+- Instead of "Run Bash command" → "Run the following command"
+- Instead of "Use WebFetch" → "Fetch from the URL" (with curl fallback noted)
+
+### Platform-Specific Post-Installation
+
+**Claude Code:**
+```
+✅ Installed {skill-name} (source: {source})
+   Path: ~/.claude/skills/{skill-name}/
+   Scope: Global
+   Activation: Skill("{skill-name}") or auto-detected by hooks
+```
+
+**Cursor / Windsurf:**
+```
+✅ Installed {skill-name} (source: {source})
+   Path: ~/.cursor/skills/{skill-name}/ (or ~/.windsurf/skills/{skill-name}/)
+   The skill is now available in your agent's context.
+```
+
+**Codex / Gemini CLI / Amp:**
+```
+✅ Installed {skill-name} (source: {source})
+   Path: ~/.codex/skills/{skill-name}/ (or ~/.gemini/ or ~/.amp/)
+   The skill file is ready. Reference it in your agent configuration if needed.
+```
+
+### Source Availability by Platform
+
+| Source | Claude Code | Cursor | Codex | Gemini | Windsurf | Amp |
+|--------|------------|--------|-------|--------|----------|-----|
+| SkillsMP (MCP) | ✅ | ⚠️ MCP config needed | ❌ | ❌ | ⚠️ MCP config needed | ❌ |
+| GitHub (gh CLI) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| CCPM (npx) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ClawSkillHub (npx) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| skills.sh (HTTP) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
+| prompts.chat (HTTP) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
+
+Legend: ✅ Native support | ⚠️ With fallback/config | ❌ Not available

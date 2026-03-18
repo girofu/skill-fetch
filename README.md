@@ -1,36 +1,97 @@
 # skill-fetch
 
-> Multi-registry skill discovery and installation for Claude Code
+> Cross-platform skill discovery and installation for AI coding agents
 
-Search, score, and install AI agent skills from **7 registries** in parallel — with quality scoring, pagination, and local/global installation.
+Search, score, and install AI agent skills from **7 registries** in parallel — works across **Claude Code, Cursor, Codex, Gemini CLI, Windsurf, and Amp**.
 
 ## Features
 
 - **7 Search Sources** — SkillsMP (semantic + keyword), GitHub, CCPM, ClawSkillHub, skills.sh, prompts.chat
-- **Multi-Variant AI Search** — 2-3 query variants fired in parallel to compensate for non-deterministic AI search, improving recall by ~2.4x
+- **Cross-Platform** — Works on 6+ AI coding agents with automatic tool adaptation
+- **Multi-Variant AI Search** — 2-3 query variants fired in parallel, improving recall by ~2.4x
 - **Quality Scoring** — 0-100 composite score: Relevance (40) + Freshness (25) + Community (20) + Trust (15)
 - **Paginated Results** — Browse 5 at a time with `c` to continue; install by number from any page
-- **Local/Global Install** — Choose project-level (`.claude/skills/`) or user-level (`~/.claude/skills/`)
+- **Local/Global Install** — Choose project-level or user-level installation
 - **Security Review** — GitHub sources are scanned for dangerous commands before installation
 - **Deduplication** — Same skill across registries is merged; similar descriptions are flagged
 
-## Quick Start
+## Installation
 
-### Install as a Claude Code skill
+Choose the method that fits your setup:
+
+### Option 1: Plugin (Best experience, Claude Code)
 
 ```bash
-# Option 1: Using skills CLI
+# Add the marketplace and install
+/plugin marketplace add girofu/skill-fetch
+/plugin install skill-fetch
+```
+
+Provides auto-updates, `/fetch-skill` command, and full plugin integration.
+
+### Option 2: npx skills add (Node.js)
+
+```bash
 npx skills add girofu/skill-fetch
+```
 
-# Option 2: Manual installation
+Works with Claude Code, Cursor, and Codex.
+
+### Option 3: curl | sh (Universal, zero dependencies)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/girofu/skill-fetch/main/install.sh | bash
+```
+
+Auto-detects installed agents and installs for all of them. Specify a single agent:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/girofu/skill-fetch/main/install.sh | bash -s -- --agent claude
+```
+
+### Option 4: Python installer
+
+```bash
+python3 -c "$(curl -fsSL https://raw.githubusercontent.com/girofu/skill-fetch/main/install.py)"
+```
+
+Or download and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/girofu/skill-fetch/main/install.py -o install.py
+python3 install.py --agent cursor
+```
+
+### Option 5: Manual (git clone)
+
+```bash
 git clone https://github.com/girofu/skill-fetch.git
-cp -r skill-fetch ~/.claude/skills/skill-fetch
+# Claude Code
+cp -r skill-fetch/skills/skill-fetch ~/.claude/skills/skill-fetch
+cp -r skill-fetch/references ~/.claude/skills/skill-fetch/references
+
+# Cursor
+cp -r skill-fetch/skills/skill-fetch ~/.cursor/skills/skill-fetch
+cp -r skill-fetch/references ~/.cursor/skills/skill-fetch/references
+
+# Other agents: replace ~/.cursor/ with ~/.codex/, ~/.gemini/, ~/.windsurf/, or ~/.amp/
 ```
 
-### Usage
+## Supported Agents
+
+| Agent | Plugin | npx | curl/sh | Python | Manual |
+|-------|--------|-----|---------|--------|--------|
+| Claude Code | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cursor | — | ✅ | ✅ | ✅ | ✅ |
+| Codex | — | ✅ | ✅ | ✅ | ✅ |
+| Gemini CLI | — | — | ✅ | ✅ | ✅ |
+| Windsurf | — | ✅ | ✅ | ✅ | ✅ |
+| Amp | — | — | ✅ | ✅ | ✅ |
+
+## Usage
 
 ```
-# Search for skills
+# Search for skills (Claude Code)
 /fetch-skill react native animation
 
 # Install from URL
@@ -39,6 +100,8 @@ cp -r skill-fetch ~/.claude/skills/skill-fetch
 # Auto-triggered by skill-eval hook
 # (no manual invocation needed)
 ```
+
+In other agents, the skill activates automatically when referenced in context.
 
 ## How It Works
 
@@ -85,17 +148,19 @@ cp -r skill-fetch ~/.claude/skills/skill-fetch
               └───────────────┘
 ```
 
+> **Cross-platform note:** SkillsMP sources (top of diagram) are only available with the SkillsMP MCP server. On other platforms, the flow starts from GitHub + supplementary sources.
+
 ## Search Sources
 
-| # | Source | Method | Type |
-|---|--------|--------|------|
-| 1 | SkillsMP (semantic) | `skillsmp_ai_search` MCP | Primary |
-| 2 | SkillsMP (keyword) | `skillsmp_search` MCP | Primary |
-| 3 | GitHub | `gh search repos` | Primary |
-| 4 | CCPM | `npx @daymade/ccpm search` | Supplementary |
-| 5 | ClawSkillHub | `npx -y clawhub search` | Supplementary |
-| 6 | skills.sh | `WebFetch` API | Supplementary |
-| 7 | prompts.chat | `WebFetch` / MCP | Supplementary |
+| # | Source | Method | Type | Availability |
+|---|--------|--------|------|-------------|
+| 1 | SkillsMP (semantic) | `skillsmp_ai_search` MCP | Primary | Claude Code + MCP |
+| 2 | SkillsMP (keyword) | `skillsmp_search` MCP | Primary | Claude Code + MCP |
+| 3 | GitHub | `gh search repos` / `curl` | Primary | All agents |
+| 4 | CCPM | `npx @daymade/ccpm search` | Supplementary | Agents with npx |
+| 5 | ClawSkillHub | `npx -y clawhub search` | Supplementary | Agents with npx |
+| 6 | skills.sh | HTTP API / `curl` | Supplementary | All agents |
+| 7 | prompts.chat | HTTP / MCP | Supplementary | All agents |
 
 Supplementary sources fail gracefully — if any is unavailable, the search continues with remaining sources.
 
@@ -120,48 +185,37 @@ Each result receives a composite score (0-100):
 | 40-54 | C | 🟡 Marginal |
 | <40 | D | 🔴 Not Recommended |
 
-## User Interaction
-
-```
-🔍 Found 22 relevant skills, showing 1-5 of 22:
-
-1. detox [SkillsMP] 🟢 85/100 | ⭐160 | Updated: 2026-02
-   📦 https://github.com/partme-ai/full-stack-skills
-   Content: Complete Detox E2E testing framework guide
-   Pros: High stars, focused on Detox E2E
-   Cons: E2E only, no unit tests
-
-2. react-native-testing [SkillsMP + skills.sh] 🟢 82/100 | ⭐84 + 📥306
-   📦 https://github.com/pluginagentmarketplace/custom-plugin-react-native
-   Content: Jest + Testing Library + Detox E2E + CI/CD
-   Pros: Most comprehensive — unit + component + E2E
-   Cons: May be too general
-
-...
-
-💡 Recommendation: #2 react-native-testing (82/100 🟢)
-
----
-Reply number to install, `c` for next 5, or "skip"
-```
-
 ## File Structure
 
 ```
 skill-fetch/
-├── SKILL.md                           # Main skill instructions
+├── .claude-plugin/
+│   └── plugin.json                  # Claude Code plugin manifest
+├── commands/
+│   └── fetch-skill.md               # /fetch-skill slash command
+├── skills/
+│   └── skill-fetch/
+│       └── SKILL.md                 # Main skill (cross-platform)
 ├── references/
-│   ├── quality-signals.md             # Scoring algorithm details
-│   └── interaction-patterns.md        # Output templates & UX patterns
-└── README.md                          # This file
+│   ├── quality-signals.md           # Scoring algorithm details
+│   ├── interaction-patterns.md      # Output templates & UX patterns
+│   └── platform-adapters.md         # Cross-platform tool mapping
+├── install.sh                       # Universal bash installer
+├── install.py                       # Python installer
+├── README.md                        # This file
+└── LICENSE                          # MIT
 ```
 
 ## Requirements
 
-- **Claude Code** with MCP tools (SkillsMP)
-- **GitHub CLI** (`gh`) for GitHub search and API calls
-- **Node.js** for npx-based registry searches (CCPM, ClawSkillHub)
-- **WebFetch** tool for skills.sh and prompts.chat APIs
+**Minimum (any agent):**
+- Shell with `curl` for GitHub search and file download
+
+**Full experience (Claude Code):**
+- SkillsMP MCP server for registry search
+- GitHub CLI (`gh`) for enhanced GitHub search
+- Node.js for npx-based registry searches (CCPM, ClawSkillHub)
+- WebFetch tool for skills.sh and prompts.chat APIs
 
 ## License
 
