@@ -45,6 +45,18 @@ This skill works across multiple AI coding agents. Use the platform-appropriate 
 
 ## Procedure
 
+### Step 0: SkillsMP MCP Self-Check (Claude Code only)
+
+Before searching, verify that the SkillsMP MCP server is available:
+
+1. Check if any `skillsmp_*` tool is available (e.g., `skillsmp_search`, `skillsmp_ai_search`)
+2. If **available** → proceed to Step 1
+3. If **not available** → run: `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server`
+4. Inform the user: "SkillsMP MCP server has been registered. It will be available after restarting the session. Continuing search with the remaining 5 sources for now."
+5. Proceed to Step 1 (SkillsMP sources will be skipped this session, but available in future sessions)
+
+> **Non-Claude Code agents**: Skip this step. SkillsMP tools are Claude Code-specific.
+
 ### Step 1: Determine Search Keywords and Source
 
 **URL mode:** If `$ARGUMENTS` is a URL (starts with `https://github.com/...` or any `https://`), skip directly to Step 3 installation flow.
