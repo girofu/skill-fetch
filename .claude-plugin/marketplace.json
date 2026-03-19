@@ -1,0 +1,19 @@
+{
+  "name": "skill-fetch",
+  "owner": {
+    "name": "girofu",
+    "url": "https://github.com/girofu"
+  },
+  "metadata": {
+    "description": "Cross-platform skill discovery and installation for AI coding agents",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "skill-fetch",
+      "source": ".",
+      "description": "Search, discover, and install AI agent skills from 7 registries with quality scoring and cross-platform support",
+      "version": "1.0.0"
+    }
+  ]
+}
