@@ -54,79 +54,27 @@ This skill works across multiple AI coding agents. Use the platform-appropriate 
 - **Has `$ARGUMENTS`**: Use directly as search terms
 - **No search terms** (auto-triggered): Prefer `Suggested search terms` from hook output, otherwise extract 2-3 queries from task context
 
-### Step 2: Parallel Search (stop on first results, max 5 rounds)
+### Step 2: Parallel Search — ALL 7 Sources (mandatory)
 
-**Fire all available sources in parallel, merge and deduplicate:**
+**⚠️ MANDATORY: Issue ALL tool calls below in a SINGLE message. Do NOT wait for any source before firing others. Do NOT proceed to scoring until all 7 sources have returned or failed.**
 
-#### Sources 1-2: SkillsMP (Primary — Claude Code with SkillsMP MCP only)
+Fire these tool calls in ONE parallel batch:
 
-> **Cross-platform note:** SkillsMP tools (`skillsmp_ai_search`, `skillsmp_search`) are only available when the SkillsMP MCP server is configured. If unavailable, skip to Sources 3-7 which work on all platforms.
+| # | Tool Call | Fallback |
+|---|-----------|----------|
+| 1 | `skillsmp_ai_search` × 3 query variants (parallel) | Skip if MCP unavailable |
+| 2 | `skillsmp_search(query)` | Skip if MCP unavailable |
+| 3 | `gh search repos "{query} claude skill" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` | — |
+| 4 | `npx @daymade/ccpm search "{query}" --limit 5` | Skip on failure |
+| 5 | `npx -y clawhub search "{query}"` | Skip on failure |
+| 6 | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
+| 7 | `WebFetch("https://prompts.chat/skills?q={query}")` or `search_prompts` MCP | `curl -s` via Bash |
 
-1. **`skillsmp_ai_search`** (semantic search) — AI understands intent, but results are non-deterministic.
-   **Must use 2-3 query variants in parallel**, merge and deduplicate, to compensate for single-search randomness:
-   - Variant A: Original query (e.g., `testing React Native mobile app`)
-   - Variant B: Reorder keywords or use synonyms (e.g., `React Native test automation framework`)
-   - Variant C: Focus on core technology (e.g., `React Native Jest testing library`)
-   Merging results from 3 calls significantly improves recall.
-2. **`skillsmp_search`** (keyword search) — Exact match, stable results, sorted by stars. Serves as a stable baseline for AI search.
+> See `references/search-sources.md` for detailed parameters, response formats, query variant examples, and curl fallback commands.
 
-#### Source 3: GitHub (Supplementary)
-3. **`gh search repos`** — `gh search repos "{query} claude skill" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars`. If results include collection repos (e.g., awesome-agent-skills), use `gh api` to search their tree for SKILL.md files containing `{query}`.
+**After ALL sources return** → deduplicate (see `references/search-sources.md`) → proceed to Step 2.5.
 
-#### Source 4: CCPM Registry (Supplementary)
-4. **`npx @daymade/ccpm search`** — `npx @daymade/ccpm search "{query}" --limit 5`. Returns skill name, description, tags. Skip this source if npx fails.
-
-#### Source 5: ClawSkillHub (Supplementary)
-5. **`npx -y clawhub search`** — `npx -y clawhub search "{query}"`. Returns slug, description. Skip this source if npx fails.
-
-#### Source 6: skills.sh (Supplementary)
-6. **WebFetch skills.sh API** — Verified API endpoint:
-   ```
-   WebFetch("https://skills.sh/api/search?q={query}&limit=5",
-            prompt="Extract skill names, sources (owner/repo), install counts, and URLs from the JSON response")
-   ```
-   Returns JSON `{ skills: [{ name, source, installs, id }] }`. Each result URL is `https://skills.sh/{id}`.
-   Skip this source if the API returns an error or times out.
-
-   **curl fallback** (when WebFetch is unavailable):
-   ```bash
-   curl -s "https://skills.sh/api/search?q={query}&limit=5"
-   ```
-
-#### Source 7: prompts.chat (Supplementary)
-7. **WebFetch prompts.chat MCP endpoint** — prompts.chat provides a Streamable HTTP MCP endpoint:
-   - **Remote MCP URL**: `https://prompts.chat/api/mcp`
-   - **Available tool**: `search_prompts` (searches prompts, including skills category), `get_prompt` (get details)
-   - **No `search_skills` tool** — use `search_prompts` and filter for skills-related results
-   - If prompts.chat MCP server is configured in `.mcp.json`, call `search_prompts({"query": "{query}", "limit": 5})` directly
-   - If MCP is not configured, use WebFetch: `WebFetch("https://prompts.chat/skills?q={query}", prompt="Extract skill names, descriptions, IDs, and authors")`
-   - Skip this source if both methods fail
-
-   **curl fallback** (when WebFetch is unavailable):
-   ```bash
-   curl -s "https://prompts.chat/skills?q={query}"
-   ```
-
-#### Execution Strategy
-- **Fire all sources in parallel** (don't wait for each other), merge results
-- Sources 4-7 are supplementary; any failure does not affect the overall flow
-- If only sources 1-3 are available, behavior is the same as before
-
-#### Deduplication Rules
-After merging all source results, deduplicate:
-1. **Same-name skill** appearing in multiple sources → keep the version with highest stars/installs, tag all sources
-2. **Same GitHub repo** appearing in multiple registries → merge into one entry, tag as `[SkillsMP + CCPM]` etc.
-3. **Highly similar descriptions but different names** → keep both but mark as potentially duplicate in analysis
-
-**≥1 result (from any source) → stop and proceed to analysis.** Only continue to next round if all sources return 0 results.
-
-| Round | Strategy | Example |
-|-------|----------|---------|
-| 1 | Hook-suggested / original search terms | `react native animation` |
-| 2 | Synonyms or broader category | `react native ui effects` |
-| 3 | Split (core technology name) | `reanimated` |
-| 4 | Related alternatives | `motion`, `gesture` |
-| 5 | Most generalized category | `react native` |
+**≥1 result (from any source) → stop and proceed to analysis.** Only continue to next round (max 5) if ALL sources return 0 results. See `references/search-sources.md` for round strategy.
 
 ### Step 2.5: Scoring and Ranking
 
@@ -306,6 +254,7 @@ After completion, output: `External skill installed successfully: {skill-name}`
 | The main file info is sufficient | The main file is a summary; references contain implementation details. |
 | GitHub source is unsafe so skip it | Do a security review and let the user decide. Don't skip on your own. |
 | SkillsMP alone is enough | Search multiple sources in parallel. GitHub has more community skills. |
+| Only searched some sources | ALL 7 sources must fire in parallel. Supplementary sources often have unique results not on SkillsMP. |
 
 ## Red Flags
 
@@ -315,6 +264,8 @@ Stop immediately and follow the procedure when these thoughts arise:
 - "Installation is overkill for this task"
 - "One search with no results means there's nothing relevant"
 - "GitHub sources are unreliable, just use SkillsMP"
+- "SkillsMP results are enough, I'll skip the other sources"
+- "Let me start with SkillsMP first, then search others if needed"
 
 ## Additional Resources
 
