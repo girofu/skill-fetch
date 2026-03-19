@@ -6,9 +6,9 @@ from pathlib import Path
 BASE_URL = "https://raw.githubusercontent.com/girofu/skill-fetch/main/"
 FILES = [
     "skills/skill-fetch/SKILL.md",
-    "references/quality-signals.md",
-    "references/interaction-patterns.md",
-    "references/platform-adapters.md",
+    "skills/skill-fetch/references/quality-signals.md",
+    "skills/skill-fetch/references/interaction-patterns.md",
+    "skills/skill-fetch/references/platform-adapters.md",
 ]
 
 
@@ -63,7 +63,7 @@ def install_for_agent(agent_key, root):
         data = download(BASE_URL + rel)
         if data is None:
             continue
-        dest = (skill_dir if rel.startswith("skills/") else refs_dir) / Path(rel).name
+        dest = (refs_dir if "references/" in rel else skill_dir) / Path(rel).name
         dest.write_bytes(data)
         cprint(GREEN, "  ✓ {}".format(dest.relative_to(root)))
         ok += 1

@@ -12,7 +12,7 @@ die()     { error "$1"; exit 1; }
 
 # --- Constants ---
 REPO_BASE="https://raw.githubusercontent.com/girofu/skill-fetch/main"
-FILES=("skills/skill-fetch/SKILL.md" "references/quality-signals.md" "references/interaction-patterns.md" "references/platform-adapters.md")
+FILES=("skills/skill-fetch/SKILL.md" "skills/skill-fetch/references/quality-signals.md" "skills/skill-fetch/references/interaction-patterns.md" "skills/skill-fetch/references/platform-adapters.md")
 AGENTS=("claude" "cursor" "codex" "gemini" "windsurf" "amp")
 SCOPE="global"
 TARGET_AGENT=""
@@ -107,12 +107,7 @@ install_for_agent() {
   for file in "${FILES[@]}"; do
     local url="${REPO_BASE}/${file}"
     local dest
-    case "$file" in
-      skills/skill-fetch/*)
-        dest="${base}/${file#skills/skill-fetch/}" ;;
-      references/*)
-        dest="${base}/${file}" ;;
-    esac
+    dest="${base}/${file#skills/skill-fetch/}"
     if ! download_file "$url" "$dest"; then
       fail=1
     fi
