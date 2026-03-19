@@ -2,22 +2,11 @@
   "name": "skill-fetch",
   "version": "1.0.0",
   "description": "Search, discover, and install AI agent skills from 7 registries with quality scoring and cross-platform support",
-  "author": "girofu",
+  "author": {
+    "name": "girofu",
+    "url": "https://github.com/girofu"
+  },
   "repository": "https://github.com/girofu/skill-fetch",
-  "components": {
-    "skills": [
-      {
-        "name": "skill-fetch",
-        "path": "skills/skill-fetch/SKILL.md",
-        "description": "Search, discover, and install AI agent skills from 7 registries (SkillsMP, GitHub, CCPM, ClawSkillHub, skills.sh, prompts.chat) with multi-variant search, quality scoring, pagination, and local/global installation."
-      }
-    ],
-    "commands": [
-      {
-        "name": "fetch-skill",
-        "path": "commands/fetch-skill.md",
-        "description": "Search and install skills from multiple registries"
-      }
-    ]
-  }
+  "license": "MIT",
+  "keywords": ["skill-discovery", "skill-install", "multi-registry", "cross-platform"]
 }
