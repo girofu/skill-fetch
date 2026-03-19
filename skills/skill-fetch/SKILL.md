@@ -5,7 +5,6 @@ description: >
   CCPM, ClawSkillHub, skills.sh, prompts.chat) with multi-variant search, quality scoring,
   pagination, and local/global installation. Use when the user asks to "fetch skill",
   "install skill", "search for a skill", or when a hook outputs "MISSING EXTERNAL SKILL".
-user-invocable: true
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "WebFetch", "shell", "read_file", "write_file", "execute_command", "fetch", "curl"]
 ---
 

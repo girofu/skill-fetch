@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "skill-fetch",
-      "source": "./plugins/skill-fetch",
+      "source": "./",
       "description": "Search, discover, and install AI agent skills from 7 registries with quality scoring and cross-platform support",
       "version": "1.0.0"
     }
