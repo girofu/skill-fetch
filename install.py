@@ -21,8 +21,6 @@ def _a(d, label, sk=None):
         "dir": d,
         "label": label,
         "skill": base,
-        "refs": base + "/references",
-        "scripts": base + "/scripts",
     }
 
 
@@ -64,15 +62,16 @@ def install_for_agent(agent_key, root):
     info = AGENTS[agent_key]
     cprint(CYAN, "\nInstalling for {} ...".format(info["label"]))
     skill_dir = root / info["skill"]
-    refs_dir = root / info["refs"]
     skill_dir.mkdir(parents=True, exist_ok=True)
-    refs_dir.mkdir(parents=True, exist_ok=True)
     ok = 0
+    prefix = "skills/skill-fetch/"
     for rel in FILES:
         data = download(BASE_URL + rel)
         if data is None:
             continue
-        dest = (refs_dir if "references/" in rel else skill_dir) / Path(rel).name
+        sub_path = rel[len(prefix) :]
+        dest = skill_dir / sub_path
+        dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(data)
         cprint(GREEN, "  ✓ {}".format(dest.relative_to(root)))
         ok += 1
