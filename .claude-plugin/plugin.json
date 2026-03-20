@@ -1,6 +1,6 @@
 {
   "name": "skill-fetch",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Search, discover, and install AI agent skills from 9 registries with quality scoring, security labels, and cross-platform support",
   "author": {
     "name": "girofu",

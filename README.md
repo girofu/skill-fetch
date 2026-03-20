@@ -253,6 +253,8 @@ Skills may optionally declare their required permissions (`network`, `filesystem
 
 ```
 skill-fetch/
+├── .claude-plugin/
+│   └── plugin.json                   # Claude Code plugin manifest
 ├── commands/
 │   └── fetch-skill.md               # /fetch-skill slash command
 ├── skills/
