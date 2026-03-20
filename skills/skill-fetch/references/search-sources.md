@@ -1,10 +1,10 @@
 # Search Sources — Detailed Reference
 
-Complete instructions for each of the 7 search sources used by skill-fetch.
+Complete instructions for each of the 9 search sources used by skill-fetch.
 
 ## Sources 1-2: SkillsMP (Primary — Claude Code with SkillsMP MCP only)
 
-> **Cross-platform note:** SkillsMP tools (`skillsmp_ai_search`, `skillsmp_search`) are only available when the SkillsMP MCP server is configured. If unavailable, skip to Sources 3-7 which work on all platforms.
+> **Cross-platform note:** SkillsMP tools (`skillsmp_ai_search`, `skillsmp_search`) are only available when the SkillsMP MCP server is configured. If unavailable, skip to Sources 3-9 which work on all platforms.
 
 ### Source 1: `skillsmp_ai_search` (semantic search)
 
@@ -26,21 +26,21 @@ skillsmp_search(query)
 
 ## Source 3: GitHub
 
+**Primary (search repos by topic — do NOT append "skill" or "SKILL.md"):**
 ```bash
-gh search repos "{query} claude skill" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars
+gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars
+```
+
+> ⚠️ Adding "skill SKILL.md" to the query makes it too restrictive and often returns 0 results. Search with the raw query only.
+
+**Supplementary (search for SKILL.md files containing the query across all GitHub):**
+```bash
+gh search code "{query}" --filename SKILL.md --json path,repository --limit 5
 ```
 
 If results include collection repos (e.g., awesome-agent-skills), use `gh api` to search their tree for SKILL.md files containing `{query}`.
 
-## Source 4: CCPM Registry
-
-```bash
-npx @daymade/ccpm search "{query}" --limit 5
-```
-
-Returns skill name, description, tags. Skip this source if npx fails.
-
-## Source 5: ClawSkillHub
+## Source 4: ClawSkillHub
 
 ```bash
 npx -y clawhub search "{query}"
@@ -48,7 +48,7 @@ npx -y clawhub search "{query}"
 
 Returns slug, description. Skip this source if npx fails.
 
-## Source 6: skills.sh
+## Source 5: skills.sh
 
 **WebFetch (preferred):**
 ```
@@ -64,35 +64,134 @@ Skip this source if the API returns an error or times out.
 curl -s "https://skills.sh/api/search?q={query}&limit=5"
 ```
 
-## Source 7: prompts.chat
+## Source 6: Anthropic Skills (GitHub)
 
-prompts.chat provides a Streamable HTTP MCP endpoint:
-- **Remote MCP URL**: `https://prompts.chat/api/mcp`
-- **Available tool**: `search_prompts` (searches prompts, including skills category), `get_prompt` (get details)
-- **No `search_skills` tool** — use `search_prompts` and filter for skills-related results
+Search the official Anthropic skills repo ([github.com/anthropics/skills](https://github.com/anthropics/skills)). Skip silently if the repo is unavailable or the command fails.
 
-**If prompts.chat MCP server is configured in `.mcp.json`:**
-```
-search_prompts({"query": "{query}", "limit": 5})
-```
-
-**If MCP is not configured, use WebFetch:**
-```
-WebFetch("https://prompts.chat/skills?q={query}",
-         prompt="Extract skill names, descriptions, IDs, and authors")
-```
-
-**curl fallback** (when WebFetch is unavailable):
 ```bash
-curl -s "https://prompts.chat/skills?q={query}"
+gh search code "{query}" --repo anthropics/skills --filename SKILL.md --json path,repository --limit 5
 ```
+
+**Fallback** (if `gh search code` is unavailable):
+```bash
+gh api repos/anthropics/skills/git/trees/main?recursive=1 --jq '.tree[].path | select(test("SKILL.md$"))'
+```
+Then filter paths by `{query}` keyword match.
+
+**Response format:** Path list, each corresponding to a skill (e.g., `skills/pdf/SKILL.md`).
+
+## Source 7: PolySkill
+
+> **Note:** PolySkill has no public REST API. Use CLI as the only method.
+> ⚠️ **PolySkill only supports single-keyword search.** Multi-word queries (e.g., "react native testing") return 0 results. Extract the **most specific single keyword** from the query (e.g., "testing" or "react"). If the query has multiple distinct topics, fire 2 parallel searches with different keywords.
+
+**CLI (only method):**
+```bash
+npx -y @polyskill/cli search "{single_keyword}" --limit 5
+```
+
+**Keyword extraction examples:**
+- "react native testing" → search "testing" (most specific to the task)
+- "React Native Expo Jest" → search "react" + search "jest" (2 parallel)
+- "mobile app development" → search "mobile"
+
+Returns text output with skill name, description, and security scan status. Skip if CLI fails or returns "No skills found". Timeout: 20s.
+
+## Source 8: SkillHub
+
+> **Note:** SkillHub CLI enters interactive mode after listing results. Prefer REST API via shell script when API key is available.
+> ⚠️ **不要直接用 curl** — API key 會暴露在命令列中，可能被權限規則擋住。一律使用 shell script 包裝。
+
+**REST API via shell script (preferred — requires `SKILLHUB_API_KEY`):**
+
+固定 script 位於 `~/.claude/skills/.fetch-skillhub.sh`。直接執行：
+```bash
+bash ~/.claude/skills/.fetch-skillhub.sh "{query}"
+```
+
+若 script 不存在，用 Write tool 建立 `~/.claude/skills/.fetch-skillhub.sh`：
+```bash
+#!/bin/bash
+KEY=$(node -e "const c=require('$HOME/.claude/skills/.fetch-config.json');console.log(c.SKILLHUB_API_KEY||'')")
+if [ -z "$KEY" ]; then echo '{"error":"no key"}'; exit 1; fi
+curl -s -X POST "https://www.skillhub.club/api/v1/skills/search" \
+  -H "Authorization: Bearer $KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"query\": \"$1\", \"limit\": 5, \"method\": \"hybrid\"}"
+```
+
+Returns JSON with AI quality scoring (grade S/A/B, score/10, 5 dimensions). Skip on 401/403 or if no API key.
+
+**CLI (fallback — no API key needed):**
+```bash
+npx -y @skill-hub/cli search "{query}" --limit 5
+```
+
+⚠️ The CLI enters interactive picker mode after listing results. Set **Bash tool timeout to 10 seconds** (`timeout: 10000`) — results print before the prompt, so the output is fully usable even when the process is killed by timeout.
+
+## Source 9: Skills Directory
+
+> **Note:** Skills Directory REST API requires API key. Supports both `Authorization: Bearer sk_live_xxx` and `x-api-key: sk_live_xxx` headers. Free tier allows 100 requests/day (resets midnight UTC).
+> ⚠️ **不要直接用 curl** — API key 會暴露在命令列中。一律使用 shell script 包裝。
+> ⚠️ WebFetch **不支援**自訂 auth headers，無法用於需要認證的 API。
+
+**REST API via shell script (requires `SKILLS_DIRECTORY_API_KEY`):**
+
+固定 script 位於 `~/.claude/skills/.fetch-skills-directory.sh`。直接執行：
+```bash
+bash ~/.claude/skills/.fetch-skills-directory.sh "{query}"
+```
+
+若 script 不存在，用 Write tool 建立 `~/.claude/skills/.fetch-skills-directory.sh`：
+```bash
+#!/bin/bash
+KEY=$(node -e "const c=require('$HOME/.claude/skills/.fetch-config.json');console.log(c.SKILLS_DIRECTORY_API_KEY||'')")
+if [ -z "$KEY" ]; then echo '{"data":[],"error":"no key"}'; exit 1; fi
+curl -s "https://www.skillsdirectory.com/api/v1/skills?q=$1&limit=5&securityGrade=A" -H "x-api-key: $KEY"
+```
+
+Additional query parameters (append to URL):
+- `verified` (boolean): Filter verified skills only
+- `securityGrade` (string): Max grade A-F (default: A)
+- `minSecurityScore` (integer): Minimum score 0-100
+- `sort` (string): `recent` | `votes` | `stars`
+- `offset` (integer): Pagination offset
+
+**Semantic search** (Pro/Enterprise only — change URL path to `/api/v1/skills/search`).
+
+**Response format:**
+```json
+{
+  "data": [{ "name": "...", "description": "...", "securityGrade": "A", "securityScore": 95, ... }],
+  "pagination": { "page": 1, "limit": 5, "totalCount": 100, "hasNextPage": true },
+  "meta": { "requestsRemaining": 99, "tier": "free" }
+}
+```
+
+Returns JSON with security grade (A-F, 0-100 scale) based on 50+ detection rules across 10 categories.
+
+**No CLI available.** Skip this source entirely if no API key is configured. The source provides security grades as External Bonus signals — when unavailable, other sources still provide adequate coverage.
+
+> ⚠️ 不要用 `&&` 串連命令 — 某些專案的 hooks 會擋住。分成「Write script → Bash 執行」兩步。
+> 若 shell script 也被權限擋，則跳過此來源。
+
+## Error Handling & Timeouts
+
+All sources follow unified error handling:
+- **HTTP errors** (401/403/429/5xx) → skip source silently
+- **Network errors / timeouts** → skip source silently
+- **Per-source timeout**: 15 seconds (WebFetch/curl), 20 seconds (npx CLI)
+- **No global timeout**: 9 sources fire in parallel; slow sources auto-skip without blocking others
+- **All sources fail** → display "All sources unavailable, check network connection"
 
 ## Deduplication Rules
 
 After merging all source results, deduplicate:
 1. **Same-name skill** appearing in multiple sources → keep the version with highest stars/installs, tag all sources
-2. **Same GitHub repo** appearing in multiple registries → merge into one entry, tag as `[SkillsMP + CCPM]` etc.
+2. **Same GitHub repo** appearing in multiple registries → merge into one entry, tag as `[SkillsMP + SkillHub]` etc.
 3. **Highly similar descriptions but different names** → keep both but mark as potentially duplicate in analysis
+4. **Same skill in SkillsMP + SkillHub + Skills Directory** → merge, take highest Trust score, accumulate External Bonus (cap +5)
+5. **Anthropic Skills repo skill also in other sources** → use Anthropic version as primary (Trust 15/15)
 
 ## Round Strategy (max 5 rounds)
 

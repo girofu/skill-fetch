@@ -1,10 +1,11 @@
 ---
 name: skill-fetch
 description: >
-  Search, discover, and install AI agent skills from 7 registries (SkillsMP, GitHub,
-  CCPM, ClawSkillHub, skills.sh, prompts.chat) with multi-variant search, quality scoring,
-  pagination, and local/global installation. Use when the user asks to "fetch skill",
-  "install skill", "search for a skill", or when a hook outputs "MISSING EXTERNAL SKILL".
+  This skill should be used when the user asks to "fetch skill", "install skill",
+  "search for a skill", or when a hook outputs "MISSING EXTERNAL SKILL".
+  Searches 9 registries (SkillsMP, GitHub, Anthropic Skills, ClawSkillHub, skills.sh,
+  PolySkill, SkillHub, Skills Directory) with multi-variant search, quality scoring,
+  security labels, pagination, and local/global installation.
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "WebFetch", "shell", "read_file", "write_file", "execute_command", "fetch", "curl"]
 ---
 
@@ -16,7 +17,7 @@ Search, score, and install agent skills from multiple registries in parallel.
 
 - A skill-eval hook outputs "MISSING EXTERNAL SKILL"
 - The current task requires domain expertise not available locally
-- The user runs `/fetch-skill [query]` or `/fetch-skill [URL]`
+- The user asks to "fetch skill", "search for a skill", or "install a skill"
 
 ## Critical Rules
 
@@ -52,10 +53,28 @@ Before searching, verify that the SkillsMP MCP server is available:
 1. Check if any `skillsmp_*` tool is available (e.g., `skillsmp_search`, `skillsmp_ai_search`)
 2. If **available** → proceed to Step 1
 3. If **not available** → run: `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server`
-4. Inform the user: "SkillsMP MCP server has been registered. It will be available after restarting the session. Continuing search with the remaining 5 sources for now."
+4. Inform the user: "SkillsMP MCP server has been registered. It will be available after restarting the session. Continuing search with the remaining 7 sources for now."
 5. Proceed to Step 1 (SkillsMP sources will be skipped this session, but available in future sessions)
 
 > **Non-Claude Code agents**: Skip this step. SkillsMP tools are Claude Code-specific.
+
+### Step 0.5: Load API Keys (optional)
+
+Some sources (SkillHub, Skills Directory) provide enhanced results with API keys. Check for configuration:
+
+1. Read `~/.claude/skills/.fetch-config.json` (if exists)
+2. Expected format:
+   ```json
+   {
+     "SKILLHUB_API_KEY": "sk-sh-...",
+     "SKILLS_DIRECTORY_API_KEY": "sk_live_..."
+   }
+   ```
+3. If file exists, use the keys for Sources 8-9 in Step 2
+4. If file doesn't exist, Sources 7-8 use CLI (no key needed), Source 9 is skipped
+5. To configure: inform the user they can manually create the file
+
+> **Note:** Sources 1-8 work without any API keys. Only Source 9 (Skills Directory) requires a key for access.
 
 ### Step 1: Determine Search Keywords and Source
 
@@ -65,9 +84,9 @@ Before searching, verify that the SkillsMP MCP server is available:
 - **Has `$ARGUMENTS`**: Use directly as search terms
 - **No search terms** (auto-triggered): Prefer `Suggested search terms` from hook output, otherwise extract 2-3 queries from task context
 
-### Step 2: Parallel Search — ALL 7 Sources (mandatory)
+### Step 2: Parallel Search — ALL 9 Sources (mandatory)
 
-**⚠️ MANDATORY: Issue ALL tool calls below in a SINGLE message. Do NOT wait for any source before firing others. Do NOT proceed to scoring until all 7 sources have returned or failed.**
+**⚠️ MANDATORY: Issue ALL tool calls below in a SINGLE message. Do NOT wait for any source before firing others. Do NOT proceed to scoring until all 9 sources have returned or failed.**
 
 Fire these tool calls in ONE parallel batch:
 
@@ -75,11 +94,13 @@ Fire these tool calls in ONE parallel batch:
 |---|-----------|----------|
 | 1 | `skillsmp_ai_search` × 3 query variants (parallel) | Skip if MCP unavailable |
 | 2 | `skillsmp_search(query)` | Skip if MCP unavailable |
-| 3 | `gh search repos "{query} claude skill" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` | — |
-| 4 | `npx @daymade/ccpm search "{query}" --limit 5` | Skip on failure |
+| 3 | `gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` (do NOT append "skill SKILL.md") | `gh search code "{query}" --filename SKILL.md --limit 5` |
+| 4 | `gh search code "{query}" --repo anthropics/skills --filename SKILL.md --limit 5` | `gh api` tree fallback |
 | 5 | `npx -y clawhub search "{query}"` | Skip on failure |
 | 6 | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
-| 7 | `WebFetch("https://prompts.chat/skills?q={query}")` or `search_prompts` MCP | `curl -s` via Bash |
+| 7 | `npx -y @polyskill/cli search "{single_keyword}" --limit 5` (extract most specific single keyword from query — multi-word queries return 0) | Skip on failure (no REST API) |
+| 8 | If `SKILLHUB_API_KEY` set: `bash ~/.claude/skills/.fetch-skillhub.sh "{query}"` (persistent script, reads key from config). If script missing, create it first. Else: `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
+| 9 | If `SKILLS_DIRECTORY_API_KEY` set: `bash ~/.claude/skills/.fetch-skills-directory.sh "{query}"` (persistent script, reads key from config). If script missing, create it first. **Never use curl directly or WebFetch.** | Skip if no API key |
 
 > See `references/search-sources.md` for detailed parameters, response formats, query variant examples, and curl fallback commands.
 
@@ -91,7 +112,7 @@ Fire these tool calls in ONE parallel batch:
 
 Calculate a quality score (0-100) for each deduplicated result. See `references/quality-signals.md` for details.
 
-**Scoring formula:** `Total = Relevance(0-40) + Freshness(0-25) + Community(0-20) + Trust(0-15)`
+**Scoring formula:** `Total = Relevance(0-40) + Freshness(0-25) + Community(0-20) + Trust(0-15) + External Bonus(0-5)`
 
 **Supplementary lookup:** For the top 5 results, use `gh api repos/{owner}/{repo} --jq '{pushed_at,stargazers_count}'` to get update time and GitHub stars. Skip lookup for high-star (≥50) results with precisely matching descriptions. Maximum 3 `gh api` calls.
 
@@ -139,11 +160,13 @@ Reply "skip" to end search
 - Freshness (0-25): Time since `pushed_at`
 - Community (0-20): Star count (log scale)
 - Trust (0-15): Source credibility
+- External Bonus (0-5): Security/quality signals from PolySkill, SkillHub, Skills Directory
 
 **Analysis principles:**
 - Sort by total score descending; break ties by relevance first
 - Each header line shows score and color grade (🟢/🟡/🔴)
-- Add `⚠️` for skills not updated in 6+ months; add `⚠️ Unreviewed` for GitHub sources
+- Add `⚠️` for skills not updated in 6+ months
+- Apply security labels per `references/quality-signals.md` §6: `🔒 Official`, `🔒 Verified`, `⚠️ Partial`, `⚠️ Unverified`, `⚠️ Security Concerns`
 - When multiple skills have different strengths, explain the differences so the user can decide
 
 #### 3b. Wait for User Reply
@@ -154,7 +177,9 @@ Reply "skip" to end search
 - **"skip"** → Output `External skill fetch: user chose to skip installation.` and continue task
 - **New keywords** → Return to Step 2 and re-search
 
-#### 3c. Choose Installation Location
+#### 3c. Choose Installation Location (MANDATORY — must ask before installing)
+
+**⚠️ MANDATORY: Always display this menu and wait for user reply. Never auto-select based on default.**
 
 Before installing, ask the user for installation scope (if not already specified):
 
@@ -162,7 +187,8 @@ Before installing, ask the user for installation scope (if not already specified
 📦 Install location:
   [G] Global (available to all projects) → ~/.claude/skills/{skill-name}/
   [L] Local (this project only) → .claude/skills/{skill-name}/
-Default: G (Global)
+
+👉 Reply G or L to continue.
 ```
 
 **Installation path reference:**
@@ -254,31 +280,11 @@ After completion, output: `External skill installed successfully: {skill-name}`
 - Success: `External skill installed successfully: {name}`
 - Skipped: `External skill fetch: user chose to skip installation.`
 
-## Rationalization Table
-
-| Excuse | Reality |
-|--------|---------|
-| The search results have enough info | Reading ≠ installing. Future sessions won't have this knowledge. |
-| One search with no results is enough | Different keywords yield different results. Search at least 5 rounds. |
-| This skill doesn't look relevant | You cannot judge on the user's behalf. Let the user decide. |
-| I can answer directly without a skill | External skills have more complete domain knowledge and best practices. |
-| The main file info is sufficient | The main file is a summary; references contain implementation details. |
-| GitHub source is unsafe so skip it | Do a security review and let the user decide. Don't skip on your own. |
-| SkillsMP alone is enough | Search multiple sources in parallel. GitHub has more community skills. |
-| Only searched some sources | ALL 7 sources must fire in parallel. Supplementary sources often have unique results not on SkillsMP. |
-
-## Red Flags
-
-Stop immediately and follow the procedure when these thoughts arise:
-- "The search results have enough information already"
-- "Let me read the skill content first to decide whether to install"
-- "Installation is overkill for this task"
-- "One search with no results means there's nothing relevant"
-- "GitHub sources are unreliable, just use SkillsMP"
-- "SkillsMP results are enough, I'll skip the other sources"
-- "Let me start with SkillsMP first, then search others if needed"
-
 ## Additional Resources
+
+> **Rationalization Table and Red Flags** are in `references/interaction-patterns.md`. Consult when rationalizing skipping steps.
 
 - **`references/interaction-patterns.md`** — Output templates, user reply handling, security review
 - **`references/quality-signals.md`** — Quality assessment dimensions, lookup methods, ranking algorithm
+- **`references/search-sources.md`** — Source-specific commands, error handling, deduplication rules
+- **`references/platform-adapters.md`** — Cross-platform tool mapping, installation paths, fallback strategies

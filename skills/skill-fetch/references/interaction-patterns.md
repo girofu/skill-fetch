@@ -13,12 +13,11 @@ Analysis results are output as plain-text, showing up to 5 relevant skills per p
    Pros: {match with current task, coverage}
    Cons: {limitations or gaps}
 
-2. {skill-name-2} [{source}] 🟡 {score}/100 | ⭐{stars} | Updated: {YYYY-MM}
+2. {skill-name-2} [{source}] 🟡 {score}/100 | ⭐{stars} | Updated: {YYYY-MM} | ⚠️ Unverified
    📦 {repo URL}
    Content: ...
    Pros: ...
    Cons: ...
-   ⚠️ Unreviewed (GitHub community source)
 
 3. ...
 4. ...
@@ -35,10 +34,10 @@ Reply "skip" to end search
 
 ## Analysis Principles
 
-- `[SkillsMP]` / `[GitHub]` / `[skills.sh]` / `[ClawSkillHub]` / `[CCPM]` tags mark the source
+- `[SkillsMP]` / `[GitHub]` / `[skills.sh]` / `[ClawSkillHub]` / `[Anthropic]` / `[PolySkill]` / `[SkillHub]` / `[SkillsDir]` tags mark the source
 - Content descriptions are based on search result descriptions, not full skill previews
 - Pros/cons are analyzed based on match with the **current task**
-- GitHub sources get a ⚠️ marker noting they are unreviewed
+- Security labels applied per `quality-signals.md` §6: `🔒 Official`, `🔒 Verified`, `⚠️ Partial`, `⚠️ Unverified`, `⚠️ Security Concerns`
 - When multiple skills have different strengths, explain the differences so the user can choose
 - Recommendations are based on task relevance, not absolute skill quality
 
@@ -134,9 +133,44 @@ When outputting instructions to the user, use generic descriptions rather than p
 |--------|------------|--------|-------|--------|----------|-----|
 | SkillsMP (MCP) | ✅ | ⚠️ MCP config needed | ❌ | ❌ | ⚠️ MCP config needed | ❌ |
 | GitHub (gh CLI) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| CCPM (npx) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Anthropic Skills (gh) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | ClawSkillHub (npx) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | skills.sh (HTTP) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
-| prompts.chat (HTTP) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
+| PolySkill (HTTP/CLI) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
+| SkillHub (HTTP/CLI) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
+| Skills Directory (HTTP) | ✅ | ✅ | ⚠️ curl | ✅ | ✅ | ⚠️ curl |
 
 Legend: ✅ Native support | ⚠️ With fallback/config | ❌ Not available
+
+## Rationalization Table
+
+Common excuses for skipping steps and why they are wrong:
+
+| Excuse | Reality |
+|--------|---------|
+| The search results have enough info | Reading ≠ installing. Future sessions won't have this knowledge. |
+| One search with no results is enough | Different keywords yield different results. Search at least 5 rounds. |
+| This skill doesn't look relevant | Cannot judge on the user's behalf. Let the user decide. |
+| Can answer directly without a skill | External skills have more complete domain knowledge and best practices. |
+| The main file info is sufficient | The main file is a summary; references contain implementation details. |
+| GitHub source is unsafe so skip it | Do a security review and let the user decide. Do not skip autonomously. |
+| SkillsMP alone is enough | Search multiple sources in parallel. GitHub has more community skills. |
+| Only searched some sources | ALL 9 sources must fire in parallel. Supplementary sources often have unique results not on SkillsMP. |
+| "SkillsMP + GitHub is enough, other sources are redundant" | PolySkill/SkillHub/Skills Directory provide unique quality and security signals not available from search alone. |
+| "Anthropic Skills is just another GitHub repo" | It's the official source with highest trust (15/15). Always search it. |
+| "Security scanning is unnecessary overhead" | The ClawHavoc incident (1,184 malicious skills) proved otherwise. Security signals protect users. |
+| "Default is Global, no need to ask" | The user MUST choose. Default is a suggestion, not permission to skip. |
+
+## Red Flags
+
+Stop immediately and follow the procedure when these thoughts arise:
+- "The search results have enough information already"
+- "Let me read the skill content first to decide whether to install"
+- "Installation is overkill for this task"
+- "One search with no results means there's nothing relevant"
+- "GitHub sources are unreliable, just use SkillsMP"
+- "SkillsMP results are enough, I'll skip the other sources"
+- "Let me start with SkillsMP first, then search others if needed"
+- "SkillsMP + GitHub covers everything, the new sources won't add anything"
+- "Security labels are just noise, let me skip them"
+- "The default is Global so I'll just install there without asking"
