@@ -15,5 +15,6 @@ if [ -z "$KEY" ]; then
   exit 1
 fi
 
-curl -s "https://www.skillsdirectory.com/api/v1/skills?q=$1&limit=5&securityGrade=A" \
+QUERY=$(printf '%s' "$1" | python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read().strip()))")
+curl -s "https://www.skillsdirectory.com/api/v1/skills?q=$QUERY&limit=5&securityGrade=A" \
   -H "x-api-key: $KEY"

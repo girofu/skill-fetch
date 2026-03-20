@@ -15,7 +15,8 @@ if [ -z "$KEY" ]; then
   exit 1
 fi
 
+QUERY=$(printf '%s' "$1" | sed 's/[\\"]/\\&/g')
 curl -s -X POST "https://www.skillhub.club/api/v1/skills/search" \
   -H "Authorization: Bearer $KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"query\": \"$1\", \"limit\": 5, \"method\": \"hybrid\"}"
+  -d "{\"query\": \"$QUERY\", \"limit\": 5, \"method\": \"hybrid\"}"

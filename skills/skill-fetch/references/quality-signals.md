@@ -93,3 +93,43 @@ Not every result needs a `gh api` lookup. Skip when:
 - **Only look up results ranked 3-7** (top 2 are usually clear, lower ones are unlikely to be selected)
 
 Target: **Maximum 3 `gh api` calls**, avoid wasting time on results that won't be selected.
+
+## 6. Security Labels
+
+Security labels indicate the trust level of a skill based on its source, community signals, and scan results.
+
+### Label Definitions
+
+| Label | Judgment Criteria |
+|-------|------------------|
+| `🔒 Official` | From `anthropics/skills` repo (Source 6) |
+| `🔒 Verified` | SkillsMP stars >= 50 **AND** Skills Directory securityGrade A/B (>=80) **AND** security scan passes with 0 findings |
+| `⚠️ Partial` | SkillsMP stars < 50 but scan passes **OR** GitHub has standard frontmatter and scan passes **OR** Skills Directory securityGrade C (60-79) |
+| `⚠️ Unverified` | Direct URL source with scan passing **OR** no external security signals available **OR** GitHub source without standard frontmatter |
+| `⚠️ Security Concerns` | Security scan found >= 1 issue **OR** Skills Directory securityGrade D/F (<60) **OR** skill is on a known blocklist |
+
+### Assignment Flow
+
+Evaluate labels in this priority order (first match wins):
+
+1. **Source check** → `anthropics/skills` repo? → `🔒 Official`
+2. **Blocklist / scan failure** → on blocklist OR scan found issues OR securityGrade D/F? → `⚠️ Security Concerns`
+3. **Full verification** → SkillsMP stars >= 50 AND securityGrade A/B AND scan clean? → `🔒 Verified`
+4. **Partial signals** → (SkillsMP stars < 50 AND scan clean) OR (GitHub with frontmatter AND scan clean) OR securityGrade C? → `⚠️ Partial`
+5. **Default** → none of the above → `⚠️ Unverified`
+
+### Display Format
+
+Security labels appear in the search result header line, after the score:
+
+```
+1. skill-name [GitHub] 🟢 82/100 | ⭐392 | Updated: 2026-03 | 🔒 Verified
+2. skill-name [SkillsMP] 🟡 65/100 | ⭐12 | Updated: 2025-11 | ⚠️ Partial
+3. skill-name [URL] 🟡 55/100 | Updated: 2026-01 | ⚠️ Unverified
+```
+
+For `⚠️ Security Concerns`, add a detail line:
+```
+4. skill-name [GitHub] 🔴 35/100 | ⭐2 | ⚠️ Security Concerns
+   🚨 Found: curl|sh remote execution in scripts/setup.sh
+```
