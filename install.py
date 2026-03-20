@@ -9,12 +9,21 @@ FILES = [
     "skills/skill-fetch/references/quality-signals.md",
     "skills/skill-fetch/references/interaction-patterns.md",
     "skills/skill-fetch/references/platform-adapters.md",
+    "skills/skill-fetch/references/search-sources.md",
+    "skills/skill-fetch/scripts/fetch-skillhub.sh",
+    "skills/skill-fetch/scripts/fetch-skills-directory.sh",
 ]
 
 
 def _a(d, label, sk=None):
     base = sk or "{}/skills/skill-fetch".format(d)
-    return {"dir": d, "label": label, "skill": base, "refs": base + "/references"}
+    return {
+        "dir": d,
+        "label": label,
+        "skill": base,
+        "refs": base + "/references",
+        "scripts": base + "/scripts",
+    }
 
 
 # fmt: off

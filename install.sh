@@ -12,7 +12,7 @@ die()     { error "$1"; exit 1; }
 
 # --- Constants ---
 REPO_BASE="https://raw.githubusercontent.com/girofu/skill-fetch/main"
-FILES=("skills/skill-fetch/SKILL.md" "skills/skill-fetch/references/quality-signals.md" "skills/skill-fetch/references/interaction-patterns.md" "skills/skill-fetch/references/platform-adapters.md" "skills/skill-fetch/references/search-sources.md")
+FILES=("skills/skill-fetch/SKILL.md" "skills/skill-fetch/references/quality-signals.md" "skills/skill-fetch/references/interaction-patterns.md" "skills/skill-fetch/references/platform-adapters.md" "skills/skill-fetch/references/search-sources.md" "skills/skill-fetch/scripts/fetch-skillhub.sh" "skills/skill-fetch/scripts/fetch-skills-directory.sh")
 AGENTS=("claude" "cursor" "codex" "gemini" "windsurf" "amp")
 SCOPE="global"
 TARGET_AGENT=""
