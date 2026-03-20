@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2026-03-20
+## [1.3.0] - 2026-03-20
 
 ### Added — Security Assessment System
 
@@ -22,14 +22,23 @@
 - **Metadata Schema Extended**: `.fetch-metadata.json` now includes `integrity`, `securityLabel`, and `scanResult` fields
 - **Security Review Scope**: Renamed from "GitHub Security Review" to "Security Review (ALL Sources)" — all sources are now scanned, not just GitHub
 
-## [0.1.0] - 2026-03-19
+## [1.2.0] - 2026-03-19
 
 ### Added
 
-- Initial release
 - 9-source parallel search (SkillsMP, GitHub, Anthropic Skills, ClawSkillHub, skills.sh, PolySkill, SkillHub, Skills Directory)
+- Bundled API scripts for SkillHub and Skills Directory (no API key exposure)
+- Security labels (Official, Verified, Partial, Unverified, Security Concerns)
+- External Bonus scoring dimension (0-5) from PolySkill, SkillHub, Skills Directory
+- PolySkill single-keyword search fix
+- GitHub search fix (removed restrictive "skill SKILL.md" suffix)
+
+## [1.0.1] - 2026-03-18
+
+### Added
+
+- Initial release with 7 registries
 - Quality scoring algorithm (0-100)
 - Cross-platform support (Claude Code, Cursor, Codex, Gemini CLI, Windsurf, Amp)
 - Paginated results with 5 per page
 - Local/global installation with scope selection
-- Bundled API search scripts for SkillHub and Skills Directory
