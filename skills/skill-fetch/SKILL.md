@@ -99,8 +99,8 @@ Fire these tool calls in ONE parallel batch:
 | 5 | `npx -y clawhub search "{query}"` | Skip on failure |
 | 6 | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
 | 7 | `npx -y @polyskill/cli search "{single_keyword}" --limit 5` (extract most specific single keyword from query — multi-word queries return 0) | Skip on failure (no REST API) |
-| 8 | If `SKILLHUB_API_KEY` set: `bash ~/.claude/skills/.fetch-skillhub.sh "{query}"` (persistent script, reads key from config). If script missing, create it first. Else: `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
-| 9 | If `SKILLS_DIRECTORY_API_KEY` set: `bash ~/.claude/skills/.fetch-skills-directory.sh "{query}"` (persistent script, reads key from config). If script missing, create it first. **Never use curl directly or WebFetch.** | Skip if no API key |
+| 8 | If `SKILLHUB_API_KEY` configured: `bash scripts/fetch-skillhub.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skillhub.sh`, then `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
+| 9 | If `SKILLS_DIRECTORY_API_KEY` configured: `bash scripts/fetch-skills-directory.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skills-directory.sh`. **Never use curl directly or WebFetch.** | Skip if no API key |
 
 > See `references/search-sources.md` for detailed parameters, response formats, query variant examples, and curl fallback commands.
 
@@ -288,3 +288,5 @@ After completion, output: `External skill installed successfully: {skill-name}`
 - **`references/quality-signals.md`** — Quality assessment dimensions, lookup methods, ranking algorithm
 - **`references/search-sources.md`** — Source-specific commands, error handling, deduplication rules
 - **`references/platform-adapters.md`** — Cross-platform tool mapping, installation paths, fallback strategies
+- **`scripts/fetch-skillhub.sh`** — SkillHub API search (reads key from `~/.claude/skills/.fetch-config.json`)
+- **`scripts/fetch-skills-directory.sh`** — Skills Directory API search (reads key from config)

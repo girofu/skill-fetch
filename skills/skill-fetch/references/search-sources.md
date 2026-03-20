@@ -100,25 +100,18 @@ Returns text output with skill name, description, and security scan status. Skip
 ## Source 8: SkillHub
 
 > **Note:** SkillHub CLI enters interactive mode after listing results. Prefer REST API via shell script when API key is available.
-> ⚠️ **不要直接用 curl** — API key 會暴露在命令列中，可能被權限規則擋住。一律使用 shell script 包裝。
+> ⚠️ **Never use curl directly** — API key would be exposed in the command line. Always use the bundled shell script.
 
-**REST API via shell script (preferred — requires `SKILLHUB_API_KEY`):**
+**REST API via bundled script (preferred — requires `SKILLHUB_API_KEY`):**
 
-固定 script 位於 `~/.claude/skills/.fetch-skillhub.sh`。直接執行：
+The script is bundled at `scripts/fetch-skillhub.sh`. Execute from the skill's base directory:
 ```bash
-bash ~/.claude/skills/.fetch-skillhub.sh "{query}"
+bash scripts/fetch-skillhub.sh "{query}"
 ```
 
-若 script 不存在，用 Write tool 建立 `~/.claude/skills/.fetch-skillhub.sh`：
-```bash
-#!/bin/bash
-KEY=$(node -e "const c=require('$HOME/.claude/skills/.fetch-config.json');console.log(c.SKILLHUB_API_KEY||'')")
-if [ -z "$KEY" ]; then echo '{"error":"no key"}'; exit 1; fi
-curl -s -X POST "https://www.skillhub.club/api/v1/skills/search" \
-  -H "Authorization: Bearer $KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"query\": \"$1\", \"limit\": 5, \"method\": \"hybrid\"}"
-```
+**Fallback order** if bundled script is unavailable:
+1. Check `~/.claude/skills/.fetch-skillhub.sh` (user-installed copy)
+2. Create it with Write tool using the template from `scripts/fetch-skillhub.sh`
 
 Returns JSON with AI quality scoring (grade S/A/B, score/10, 5 dimensions). Skip on 401/403 or if no API key.
 
@@ -132,23 +125,19 @@ npx -y @skill-hub/cli search "{query}" --limit 5
 ## Source 9: Skills Directory
 
 > **Note:** Skills Directory REST API requires API key. Supports both `Authorization: Bearer sk_live_xxx` and `x-api-key: sk_live_xxx` headers. Free tier allows 100 requests/day (resets midnight UTC).
-> ⚠️ **不要直接用 curl** — API key 會暴露在命令列中。一律使用 shell script 包裝。
-> ⚠️ WebFetch **不支援**自訂 auth headers，無法用於需要認證的 API。
+> ⚠️ **Never use curl directly** — API key would be exposed in the command line. Always use the bundled shell script.
+> ⚠️ WebFetch **does not support** custom auth headers. Do not use WebFetch for Skills Directory.
 
-**REST API via shell script (requires `SKILLS_DIRECTORY_API_KEY`):**
+**REST API via bundled script (requires `SKILLS_DIRECTORY_API_KEY`):**
 
-固定 script 位於 `~/.claude/skills/.fetch-skills-directory.sh`。直接執行：
+The script is bundled at `scripts/fetch-skills-directory.sh`. Execute from the skill's base directory:
 ```bash
-bash ~/.claude/skills/.fetch-skills-directory.sh "{query}"
+bash scripts/fetch-skills-directory.sh "{query}"
 ```
 
-若 script 不存在，用 Write tool 建立 `~/.claude/skills/.fetch-skills-directory.sh`：
-```bash
-#!/bin/bash
-KEY=$(node -e "const c=require('$HOME/.claude/skills/.fetch-config.json');console.log(c.SKILLS_DIRECTORY_API_KEY||'')")
-if [ -z "$KEY" ]; then echo '{"data":[],"error":"no key"}'; exit 1; fi
-curl -s "https://www.skillsdirectory.com/api/v1/skills?q=$1&limit=5&securityGrade=A" -H "x-api-key: $KEY"
-```
+**Fallback order** if bundled script is unavailable:
+1. Check `~/.claude/skills/.fetch-skills-directory.sh` (user-installed copy)
+2. Create it with Write tool using the template from `scripts/fetch-skills-directory.sh`
 
 Additional query parameters (append to URL):
 - `verified` (boolean): Filter verified skills only
