@@ -86,27 +86,37 @@ Some sources (SkillHub, Skills Directory) provide enhanced results with API keys
 
 ### Step 2: Parallel Search — ALL 9 Sources (mandatory)
 
-**⚠️ MANDATORY: Issue ALL tool calls below in a SINGLE message. Do NOT wait for any source before firing others. Do NOT proceed to scoring until all 9 sources have returned or failed.**
+**⚠️ MANDATORY: You MUST fire ALL 9 sources in a SINGLE message. Do NOT fire only SkillsMP and skip the rest. Do NOT proceed to scoring until all 9 sources have returned or failed.**
+
+**⚠️ COMMON FAILURE MODE: LLM fires sources 1-2 (SkillsMP), gets results, then skips sources 3-9. This is WRONG. SkillsMP results alone are insufficient — GitHub, ClawhHub, skills.sh, and PolySkill contain different skills not indexed by SkillsMP. You MUST fire ALL sources every time.**
 
 Fire these tool calls in ONE parallel batch:
 
-| # | Tool Call | Fallback |
-|---|-----------|----------|
-| 1 | `skillsmp_ai_search` × 3 query variants (parallel) | Skip if MCP unavailable |
-| 2 | `skillsmp_search(query)` | Skip if MCP unavailable |
-| 3 | `gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` (do NOT append "skill SKILL.md") | `gh search code "{query}" --filename SKILL.md --limit 5` |
-| 4 | `gh search code "{query}" --repo anthropics/skills --filename SKILL.md --limit 5` | `gh api` tree fallback |
-| 5 | `npx -y clawhub search "{query}"` | Skip on failure |
-| 6 | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
-| 7 | `npx -y @polyskill/cli search "{single_keyword}" --limit 5` (extract most specific single keyword from query — multi-word queries return 0) | Skip on failure (no REST API) |
-| 8 | If `SKILLHUB_API_KEY` configured: `bash scripts/fetch-skillhub.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skillhub.sh`, then `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
-| 9 | If `SKILLS_DIRECTORY_API_KEY` configured: `bash scripts/fetch-skills-directory.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skills-directory.sh`. **Never use curl directly or WebFetch.** | Skip if no API key |
+| # | Source | Tool Call | Fallback |
+|---|--------|-----------|----------|
+| 1 | **SkillsMP AI** | `skillsmp_ai_search` × 3 query variants (parallel) | Skip if MCP unavailable |
+| 2 | **SkillsMP keyword** | `skillsmp_search(query)` | Skip if MCP unavailable |
+| 3 | **GitHub repos** | `gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` (do NOT append "skill SKILL.md") | `gh search code "{query}" --filename SKILL.md --limit 5` |
+| 4 | **Anthropic Skills** | `gh search code "{query}" --repo anthropics/skills --filename SKILL.md --limit 5` | `gh api` tree fallback |
+| 5 | **ClawhHub** | `npx -y clawhub search "{query}"` | Skip on failure |
+| 6 | **skills.sh** | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
+| 7 | **PolySkill** | `npx -y @polyskill/cli search "{single_keyword}" --limit 5` (extract most specific single keyword from query — multi-word queries return 0) | Skip on failure (no REST API) |
+| 8 | **SkillHub** | If `SKILLHUB_API_KEY` configured: `bash scripts/fetch-skillhub.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skillhub.sh`, then `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
+| 9 | **Skills Directory** | If `SKILLS_DIRECTORY_API_KEY` configured: `bash scripts/fetch-skills-directory.sh "{query}"` (bundled script). Fallback: check `~/.claude/skills/.fetch-skills-directory.sh`. **Never use curl directly or WebFetch.** | Skip if no API key |
 
 > See `references/search-sources.md` for detailed parameters, response formats, query variant examples, and curl fallback commands.
 
+**⚠️ POST-SEARCH CHECKLIST (mandatory before proceeding to Step 2.5):**
+
+Before scoring, you MUST confirm which sources were queried. Output this checklist:
+```
+Sources queried: [1] SkillsMP AI ✅ [2] SkillsMP KW ✅ [3] GitHub ✅/❌ [4] Anthropic ✅/❌ [5] ClawhHub ✅/❌ [6] skills.sh ✅/❌ [7] PolySkill ✅/❌ [8] SkillHub ✅/❌ [9] Skills Dir ✅/❌
+```
+If sources 3-7 are ALL marked ❌, you have skipped the non-SkillsMP sources — go back and fire them NOW.
+
 **After ALL sources return** → deduplicate (see `references/search-sources.md`) → proceed to Step 2.5.
 
-**≥1 result (from any source) → stop and proceed to analysis.** Only continue to next round (max 5) if ALL sources return 0 results. See `references/search-sources.md` for round strategy.
+**Round strategy (max 5 rounds):** The "≥1 result → stop" rule applies to **rounds**, not individual sources. Within a single round, ALL 9 sources must be queried. Only if ALL 9 sources return 0 results in a round should you proceed to the next round with broader keywords. If any source returns ≥1 result in a round, proceed to scoring (do NOT start another round).
 
 ### Step 2.5: Scoring and Ranking
 

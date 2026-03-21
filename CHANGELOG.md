@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1] - 2026-03-21
+
+### Fixed
+
+- **External sources skipped during search**: LLM would fire only SkillsMP (sources 1-2), get results, then skip GitHub/ClawhHub/skills.sh/PolySkill/SkillHub/Skills Directory (sources 3-9). Added COMMON FAILURE MODE warning and POST-SEARCH CHECKLIST to enforce all 9 sources are queried every time.
+- **Ambiguous round strategy**: "≥1 result → stop" was misinterpreted as "stop after first source returns results". Clarified that the rule applies to **rounds** (not individual sources) — within a single round, ALL 9 sources must be queried.
+
+### Changed
+
+- **Step 2 table format**: Added Source column for clarity (SkillsMP AI, GitHub repos, ClawhHub, etc.)
+- **Mandatory post-search checklist**: Must output `Sources queried: [1] ✅ [2] ✅ [3] ✅/❌ ...` before proceeding to scoring. If sources 3-7 are all ❌, must go back and fire them.
+
 ## [1.3.0] - 2026-03-20
 
 ### Added — Security Assessment System
