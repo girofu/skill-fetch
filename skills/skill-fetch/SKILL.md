@@ -50,11 +50,14 @@ This skill works across multiple AI coding agents. Use the platform-appropriate 
 
 Before searching, verify that the SkillsMP MCP server is available:
 
-1. Check if any `skillsmp_*` tool is available (e.g., `skillsmp_search`, `skillsmp_ai_search`)
-2. If **available** → proceed to Step 1
-3. If **not available** → run: `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server`
-4. Inform the user: "SkillsMP MCP server has been registered. It will be available after restarting the session. Continuing search with the remaining 7 sources for now."
-5. Proceed to Step 1 (SkillsMP sources will be skipped this session, but available in future sessions)
+1. **First, try loading deferred tools**: Run `ToolSearch("skillsmp")` to load any deferred SkillsMP MCP tools. In Claude Code, MCP tools are often deferred (not loaded until requested) and have namespaced names like `mcp__skillsmp__skillsmp_search`. The `ToolSearch` call resolves these.
+2. After ToolSearch, check if any `skillsmp_*` or `mcp__skillsmp__*` tool is now available
+3. If **available** → proceed to Step 1
+4. If **still not available** → run: `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server`
+5. Inform the user: "SkillsMP MCP server has been registered. It will be available after restarting the session. Continuing search with the remaining 7 sources for now."
+6. Proceed to Step 1 (SkillsMP sources will be skipped this session, but available in future sessions)
+
+> **Tool name note**: SkillsMP tools may appear with MCP namespace prefix: `mcp__skillsmp__skillsmp_search` instead of `skillsmp_search`. Both forms work — use whichever is available.
 
 > **Non-Claude Code agents**: Skip this step. SkillsMP tools are Claude Code-specific.
 
@@ -86,16 +89,25 @@ Some sources (SkillHub, Skills Directory) provide enhanced results with API keys
 
 ### Step 2: Parallel Search — ALL 9 Sources (mandatory)
 
-**⚠️ MANDATORY: You MUST fire ALL 9 sources in a SINGLE message. Do NOT fire only SkillsMP and skip the rest. Do NOT proceed to scoring until all 9 sources have returned or failed.**
+**⚠️ MANDATORY: You MUST fire ALL 9 sources. Do NOT proceed to scoring until all 9 sources have returned or failed.**
 
-**⚠️ COMMON FAILURE MODE: LLM fires sources 1-2 (SkillsMP), gets results, then skips sources 3-9. This is WRONG. SkillsMP results alone are insufficient — GitHub, ClawhHub, skills.sh, and PolySkill contain different skills not indexed by SkillsMP. You MUST fire ALL sources every time.**
+**⚠️ COMMON FAILURE MODE: LLM fires sources 1-2 (SkillsMP), gets results, then skips sources 3-9. This is WRONG. SkillsMP results alone are insufficient — GitHub, ClawhHub, skills.sh, and PolySkill contain different skills not indexed by SkillsMP.**
 
-Fire these tool calls in ONE parallel batch:
+**⚠️ EXECUTION ORDER: You MUST complete BOTH Step 2a AND Step 2b before proceeding to Step 2.5. Step 2a alone is NOT sufficient.**
+
+#### Step 2a: Fire SkillsMP sources (1-2)
 
 | # | Source | Tool Call | Fallback |
 |---|--------|-----------|----------|
 | 1 | **SkillsMP AI** | `skillsmp_ai_search` × 3 query variants (parallel) | Skip if MCP unavailable |
 | 2 | **SkillsMP keyword** | `skillsmp_search(query)` | Skip if MCP unavailable |
+
+#### Step 2b: Fire non-SkillsMP sources (3-9) — DO NOT SKIP
+
+**⚠️ You MUST fire these sources even if Step 2a already returned results. These sources contain skills NOT in SkillsMP.**
+
+| # | Source | Tool Call | Fallback |
+|---|--------|-----------|----------|
 | 3 | **GitHub repos** | `gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` (do NOT append "skill SKILL.md") | `gh search code "{query}" --filename SKILL.md --limit 5` |
 | 4 | **Anthropic Skills** | `gh search code "{query}" --repo anthropics/skills --filename SKILL.md --limit 5` | `gh api` tree fallback |
 | 5 | **ClawhHub** | `npx -y clawhub search "{query}"` | Skip on failure |

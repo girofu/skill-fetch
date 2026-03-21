@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2] - 2026-03-21
+
+### Fixed
+
+- **SkillsMP MCP tools not loading**: Tools were deferred and had namespaced names (`mcp__skillsmp__skillsmp_search`). Step 0 now instructs to run `ToolSearch("skillsmp")` first to load deferred tools before checking availability. Added note about namespaced tool names.
+- **Skills Directory query with spaces fails (exit code 3)**: URL encoding now uses `node encodeURIComponent` (primary), `python3 urllib.parse.quote` (fallback), or space-to-`+` replacement (last resort). Previously `curl` would truncate URL at spaces.
+- **SkillHub script injection risk**: Replaced `sed`-based JSON escaping with `node JSON.stringify()` for safe query encoding in POST body. Handles all special characters including newlines, quotes, and backslashes.
+
 ## [1.3.1] - 2026-03-21
 
 ### Fixed

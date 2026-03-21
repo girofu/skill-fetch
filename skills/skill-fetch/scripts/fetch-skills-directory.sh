@@ -1,7 +1,7 @@
 #!/bin/bash
 # Skills Directory API search script for skill-fetch
 # Reads SKILLS_DIRECTORY_API_KEY from ~/.claude/skills/.fetch-config.json
-# Usage: bash fetch-skills-directory.sh "search+query"
+# Usage: bash fetch-skills-directory.sh "search query with spaces"
 
 CONFIG="$HOME/.claude/skills/.fetch-config.json"
 if [ ! -f "$CONFIG" ]; then
@@ -15,6 +15,15 @@ if [ -z "$KEY" ]; then
   exit 1
 fi
 
-QUERY=$(printf '%s' "$1" | python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read().strip()))")
-curl -s "https://www.skillsdirectory.com/api/v1/skills?q=$QUERY&limit=5&securityGrade=A" \
+# URL-encode query (try node first, fallback to python3)
+ENCODED_QUERY=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$1" 2>/dev/null)
+if [ -z "$ENCODED_QUERY" ]; then
+  ENCODED_QUERY=$(printf '%s' "$1" | python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read().strip()))" 2>/dev/null)
+fi
+if [ -z "$ENCODED_QUERY" ]; then
+  # Last resort: replace spaces with +
+  ENCODED_QUERY=$(printf '%s' "$1" | tr ' ' '+')
+fi
+
+curl -s "https://www.skillsdirectory.com/api/v1/skills?q=${ENCODED_QUERY}&limit=5&securityGrade=A" \
   -H "x-api-key: $KEY"
