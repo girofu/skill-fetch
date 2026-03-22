@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.3] - 2026-03-22
+
+### Changed
+
+- **SKILL.md rewrite (351→~180 lines)**: Three core improvements to boost 9-source compliance from ~60% to >90%:
+  1. **GATE pattern replaces MANDATORY warnings** — Step 2 requires outputting POST-SEARCH checklist; Step 2.5 has PREREQUISITE check that blocks progression without it
+  2. **Action Checklist with inline STOP** — Sources listed as checkable items with STOP barriers after items 2 and 7, placed where LLM most likely short-circuits
+  3. **Deduplicated content** — Platform Compatibility table, cross-platform paths, search results template, security scan details, scoring formula breakdown, and Step 0/0.5 details moved to reference files
+- **Installation scope GATE** — Step 3c now has a structural PREREQUISITE check requiring G/L reply before Step 3d proceeds
+- **Metadata JSON schema moved to `references/search-sources.md`** — Removed from SKILL.md Step 3f, consolidated with source documentation
+- **Prompt engineering polish** (15 targeted changes, net +1 line):
+  - P1: Added correct/wrong `<example>` pairs at SEARCH GATE and SCOPE GATE (few-shot)
+  - P2: Reduced emphasis points from 8+ to 3 (SEARCH GATE, SCOPE GATE, STOP barrier) — prevents attention dilution
+  - P3: Rewrote negative instructions as positive (`Do NOT skip 3-9` → `Continue: sources 3-9 now`)
+  - P4: Added WHY to key constraints (SkillsMP <30%, G/L persistence semantics)
+  - P5: Removed redundant content (tagline, Completion section, `"check mentally"`, duplicate round strategy)
+  - P6: Disambiguated GATE labels (`SEARCH GATE` vs `SCOPE GATE`)
+  - P7: Strategic repetition of 9-source rule (Critical Rules #1 + Step 2 + Step 2.5 verify)
+
 ## [1.3.2] - 2026-03-21
 
 ### Fixed

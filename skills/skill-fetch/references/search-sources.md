@@ -26,19 +26,21 @@ skillsmp_search(query)
 
 ## Source 3: GitHub
 
-**Primary (search repos by topic — do NOT append "skill" or "SKILL.md"):**
-```bash
-gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars
-```
-
-> ⚠️ Adding "skill SKILL.md" to the query makes it too restrictive and often returns 0 results. Search with the raw query only.
-
-**Supplementary (search for SKILL.md files containing the query across all GitHub):**
+**Primary (search for SKILL.md files containing the query — highest precision):**
 ```bash
 gh search code "{query}" --filename SKILL.md --json path,repository --limit 5
 ```
 
-If results include collection repos (e.g., awesome-agent-skills), use `gh api` to search their tree for SKILL.md files containing `{query}`.
+This finds repos that actually contain agent skills matching the query. Much higher hit rate than repo search for niche topics.
+
+**Supplementary (search repos by topic — broadens coverage):**
+```bash
+gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars
+```
+
+> Do NOT append "skill" or "SKILL.md" to the repo query — it makes results too restrictive. Use the raw query only.
+
+Run both commands in parallel. If code search returns collection repos (e.g., awesome-agent-skills), use `gh api` to search their tree for SKILL.md files containing `{query}`.
 
 ## Source 4: ClawSkillHub
 
@@ -193,3 +195,34 @@ After merging all source results, deduplicate:
 | 3 | Split (core technology name) | `reanimated` |
 | 4 | Related alternatives | `motion`, `gesture` |
 | 5 | Most generalized category | `react native` |
+
+## Metadata JSON Schema
+
+After installation, record metadata in `~/.claude/skills/.fetch-metadata.json`:
+
+```json
+{
+  "skill-name": {
+    "source": "skillsmp|github|url",
+    "query": "<search terms or URL>",
+    "scope": "global|local",
+    "path": "<actual installation path>",
+    "installedAt": "<ISO>",
+    "integrity": {
+      "algorithm": "sha256",
+      "files": {
+        "SKILL.md": "<sha256-hash>",
+        "references/example.md": "<sha256-hash>"
+      }
+    },
+    "securityLabel": "Official|Verified|Partial|Unverified|Security Concerns",
+    "scanResult": "clean|warnings|concerns"
+  }
+}
+```
+
+**Integrity hash calculation** (cross-platform):
+- macOS/Linux: `shasum -a 256 <file> | cut -d' ' -f1`
+- Node.js fallback: `node -e "const c=require('crypto');const f=require('fs');console.log(c.createHash('sha256').update(f.readFileSync(process.argv[1])).digest('hex'))" <file>`
+
+**Integrity verification**: On future skill load, compare current hashes against recorded. On mismatch, warn user and offer "yes" or "reinstall".
