@@ -4,6 +4,12 @@
 
 Search, score, and install AI agent skills from **9 registries** in parallel — works across **Claude Code, Cursor, Codex, Gemini CLI, Windsurf, and Amp**.
 
+## Quick Start
+
+1. **Install** — pick any method from [Installation](#installation) below
+2. **Set up API keys** — run `/fetch-skill-config` (interactive, recommended) or [configure manually](#️-setup-api-keys)
+3. **Search & install skills** — `/fetch-skill react native animation`
+
 ## Features
 
 - **9 Search Sources** — SkillsMP (semantic + keyword), GitHub, Anthropic Skills, ClawSkillHub, skills.sh, PolySkill, SkillHub, Skills Directory
@@ -82,6 +88,16 @@ cp -r skill-fetch/skills/skill-fetch ~/.cursor/skills/skill-fetch
 ## ⚙️ Setup API Keys
 
 > **Important:** API keys unlock the full 9-source search. Without them, only Sources 3-8 are available (still useful, but fewer results).
+
+### Interactive Setup (Recommended)
+
+Run `/fetch-skill-config` in Claude Code. It will:
+- Show which keys are currently configured
+- Walk you through setting each key with links to get them
+- Automatically install the SkillsMP MCP server if needed
+- Write everything to `~/.claude/skills/.fetch-config.json`
+
+### Manual Setup
 
 ### 🔑 SkillsMP API Key (Sources 1-2) — Recommended
 
@@ -279,7 +295,8 @@ skill-fetch/
 ├── .claude-plugin/
 │   └── plugin.json                   # Claude Code plugin manifest
 ├── commands/
-│   └── fetch-skill.md               # /fetch-skill slash command
+│   ├── fetch-skill.md               # /fetch-skill slash command
+│   └── fetch-skill-config.md        # /fetch-skill-config API key setup
 ├── skills/
 │   └── skill-fetch/
 │       ├── SKILL.md                  # Main skill (cross-platform)
