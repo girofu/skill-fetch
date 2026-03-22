@@ -30,9 +30,9 @@ allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "WebFetch", "shell", "r
 
 ### Prerequisites
 
-**SkillsMP MCP (Claude Code only):** Run `ToolSearch("skillsmp")` to load deferred tools. If no `skillsmp_*` tool is found, run `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server`, inform user it will be available next session, and continue with sources 3-9. Non-Claude Code agents: skip SkillsMP entirely.
+**SkillsMP MCP (Claude Code only):** Run `ToolSearch("skillsmp")` to load deferred tools. If no `skillsmp_*` tool is found, ask the user for their SkillsMP API key (get one at https://skillsmp.com), then run `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY={key}`. Inform user it will be available next session, and continue with sources 3-9. Non-Claude Code agents: skip SkillsMP entirely.
 
-**API keys (optional):** Read `~/.claude/skills/.fetch-config.json` if it exists. Keys: `SKILLHUB_API_KEY` (Source 8 REST), `SKILLS_DIRECTORY_API_KEY` (Source 9). Sources 1-8 work without keys. Source 9 requires a key.
+**API keys (optional):** Read `~/.claude/skills/.fetch-config.json` if it exists. Keys: `SKILLSMP_API_KEY` (Sources 1-2), `SKILLHUB_API_KEY` (Source 8 REST), `SKILLS_DIRECTORY_API_KEY` (Source 9). Sources 3-8 work without keys.
 
 **URL mode:** If `$ARGUMENTS` starts with `https://`, skip directly to Step 3 installation.
 

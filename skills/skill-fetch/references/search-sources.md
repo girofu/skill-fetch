@@ -6,6 +6,12 @@ Complete instructions for each of the 9 search sources used by skill-fetch.
 
 > **Cross-platform note:** SkillsMP tools (`skillsmp_ai_search`, `skillsmp_search`) are only available when the SkillsMP MCP server is configured. If unavailable, skip to Sources 3-9 which work on all platforms.
 
+**Setup:** Requires a `SKILLSMP_API_KEY` from https://skillsmp.com. Install command:
+```bash
+claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY={key}
+```
+The key can also be stored in `~/.claude/skills/.fetch-config.json` for reference.
+
 ### Source 1: `skillsmp_ai_search` (semantic search)
 
 AI understands intent, but results are non-deterministic.
