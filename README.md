@@ -161,7 +161,7 @@ In other agents, the skill activates automatically when referenced in context.
               └───────────────┘
 ```
 
-> **Cross-platform note:** SkillsMP sources are only available with the SkillsMP MCP server. On other platforms, the flow starts from GitHub + supplementary sources.
+> **Cross-platform note:** SkillsMP sources require the MCP server + API key (see [API Key Setup](#api-key-setup)). On other platforms, the flow starts from GitHub + supplementary sources.
 
 ## Search Sources
 
@@ -169,7 +169,7 @@ In other agents, the skill activates automatically when referenced in context.
 |---|--------|--------|------|-------------|
 | 1 | SkillsMP (semantic) | `skillsmp_ai_search` MCP × 3 variants | Primary | Claude Code + MCP |
 | 2 | SkillsMP (keyword) | `skillsmp_search` MCP | Primary | Claude Code + MCP |
-| 3 | GitHub | `gh search repos` / `curl` | Primary | All agents |
+| 3 | GitHub | `gh search code --filename SKILL.md` (primary) + `gh search repos` (supplementary) | Primary | All agents |
 | 4 | Anthropic Skills | `gh search code` in `anthropics/skills` | Official | All agents |
 | 5 | ClawSkillHub | `npx -y clawhub search` | Supplementary | Agents with npx |
 | 6 | skills.sh | HTTP API / WebFetch | Supplementary | All agents |
@@ -179,12 +179,25 @@ In other agents, the skill activates automatically when referenced in context.
 
 All sources are searched **in parallel**. Sources fail gracefully — if any is unavailable, the search continues with remaining sources.
 
-## API Key Setup (Optional)
+## API Key Setup
 
-Sources 8-9 provide enhanced results with API keys. Create `~/.claude/skills/.fetch-config.json`:
+### SkillsMP (Sources 1-2) — Required for MCP
+
+Get an API key from [skillsmp.com](https://skillsmp.com), then register the MCP server:
+
+```bash
+claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY=your_key
+```
+
+Without this, Sources 1-2 are skipped and the search uses Sources 3-9 only.
+
+### SkillHub & Skills Directory (Sources 8-9) — Optional
+
+Create `~/.claude/skills/.fetch-config.json` for enhanced results:
 
 ```json
 {
+  "SKILLSMP_API_KEY": "your-skillsmp-key",
   "SKILLHUB_API_KEY": "sk-sh-your-key-here",
   "SKILLS_DIRECTORY_API_KEY": "sk_live_your-key-here"
 }
@@ -192,7 +205,7 @@ Sources 8-9 provide enhanced results with API keys. Create `~/.claude/skills/.fe
 
 The bundled scripts in `scripts/` read keys from this config file automatically — API keys are never exposed in command-line arguments.
 
-Sources 1-7 work without any API keys.
+Sources 3-8 work without any API keys. Source 9 (Skills Directory) requires a key.
 
 ## Quality Scoring
 
@@ -281,7 +294,7 @@ skill-fetch/
 - Shell with `curl` or `WebFetch` for HTTP-based searches
 
 **Full experience (Claude Code):**
-- SkillsMP MCP server for registry search (`claude mcp add skillsmp -- npx -y skillsmp-mcp-server`)
+- SkillsMP MCP server + API key from [skillsmp.com](https://skillsmp.com) (see [API Key Setup](#api-key-setup))
 - GitHub CLI (`gh`) for GitHub and Anthropic Skills search
 - Node.js for npx-based searches (ClawSkillHub, PolySkill, SkillHub CLI)
 - `~/.claude/skills/.fetch-config.json` for SkillHub and Skills Directory APIs (optional)
