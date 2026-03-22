@@ -79,6 +79,40 @@ cp -r skill-fetch/skills/skill-fetch ~/.cursor/skills/skill-fetch
 # Other agents: replace ~/.cursor/ with ~/.codex/, ~/.gemini/, ~/.windsurf/, or ~/.amp/
 ```
 
+## ⚙️ Setup API Keys
+
+> **Important:** API keys unlock the full 9-source search. Without them, only Sources 3-8 are available (still useful, but fewer results).
+
+### 🔑 SkillsMP API Key (Sources 1-2) — Recommended
+
+SkillsMP provides the **best semantic search** with AI-powered matching. Get your free API key:
+
+1. Go to **[skillsmp.com](https://skillsmp.com)** and create an account
+2. Copy your API key
+3. Register the MCP server:
+
+```bash
+claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY=your_key_here
+```
+
+4. **Restart Claude Code** — SkillsMP tools will be available in the next session
+
+### 🔑 SkillHub & Skills Directory (Sources 8-9) — Optional
+
+For additional coverage, create `~/.claude/skills/.fetch-config.json`:
+
+```json
+{
+  "SKILLSMP_API_KEY": "your-skillsmp-key",
+  "SKILLHUB_API_KEY": "sk-sh-your-key-here",
+  "SKILLS_DIRECTORY_API_KEY": "sk_live_your-key-here"
+}
+```
+
+> Sources 3-8 work **without any API keys**. Source 9 (Skills Directory) requires a key.
+
+---
+
 ## Supported Agents
 
 | Agent | Plugin | npx | curl/sh | Python | Manual |
@@ -181,31 +215,7 @@ All sources are searched **in parallel**. Sources fail gracefully — if any is 
 
 ## API Key Setup
 
-### SkillsMP (Sources 1-2) — Required for MCP
-
-Get an API key from [skillsmp.com](https://skillsmp.com), then register the MCP server:
-
-```bash
-claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY=your_key
-```
-
-Without this, Sources 1-2 are skipped and the search uses Sources 3-9 only.
-
-### SkillHub & Skills Directory (Sources 8-9) — Optional
-
-Create `~/.claude/skills/.fetch-config.json` for enhanced results:
-
-```json
-{
-  "SKILLSMP_API_KEY": "your-skillsmp-key",
-  "SKILLHUB_API_KEY": "sk-sh-your-key-here",
-  "SKILLS_DIRECTORY_API_KEY": "sk_live_your-key-here"
-}
-```
-
-The bundled scripts in `scripts/` read keys from this config file automatically — API keys are never exposed in command-line arguments.
-
-Sources 3-8 work without any API keys. Source 9 (Skills Directory) requires a key.
+> See [⚙️ Setup API Keys](#️-setup-api-keys) above for detailed instructions.
 
 ## Quality Scoring
 
