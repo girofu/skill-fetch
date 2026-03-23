@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0] - 2026-03-23
+
+### Added
+
+- Community health files: CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
+- Issue templates (bug report, feature request) and PR template
+- GitHub Actions CI: ShellCheck, SKILL.md frontmatter validation, installer smoke test
+- README badges (license, release, stars, CI status)
+
 ## [1.3.3] - 2026-03-22
 
 ### Changed

@@ -1,5 +1,10 @@
 # skill-fetch
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/girofu/skill-fetch)](https://github.com/girofu/skill-fetch/releases)
+[![GitHub stars](https://img.shields.io/github/stars/girofu/skill-fetch)](https://github.com/girofu/skill-fetch/stargazers)
+[![CI](https://github.com/girofu/skill-fetch/actions/workflows/ci.yml/badge.svg)](https://github.com/girofu/skill-fetch/actions/workflows/ci.yml)
+
 > Cross-platform skill discovery and installation for AI coding agents
 
 Search, score, and install AI agent skills from **9 registries** in parallel — works across **Claude Code, Cursor, Codex, Gemini CLI, Windsurf, and Amp**.

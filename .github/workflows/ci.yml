@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      - name: Run ShellCheck on all shell scripts
+        run: |
+          find . -name '*.sh' -type f | while read -r file; do
+            echo "Checking $file..."
+            shellcheck "$file"
+          done
+
+  frontmatter:
+    name: SKILL.md Frontmatter Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SKILL.md frontmatter
+        run: |
+          SKILL_FILE="skills/skill-fetch/SKILL.md"
+          if [ ! -f "$SKILL_FILE" ]; then
+            echo "ERROR: $SKILL_FILE not found"
+            exit 1
+          fi
+          # Check starts with ---
+          HEAD=$(head -1 "$SKILL_FILE")
+          if [ "$HEAD" != "---" ]; then
+            echo "ERROR: SKILL.md must start with --- frontmatter"
+            exit 1
+          fi
+          # Check has closing ---
+          CLOSING=$(sed -n '2,${/^---$/p;q}' "$SKILL_FILE")
+          if [ -z "$CLOSING" ]; then
+            echo "ERROR: SKILL.md frontmatter not closed with ---"
+            exit 1
+          fi
+          # Check has name field
+          if ! grep -q '^name:' "$SKILL_FILE"; then
+            echo "ERROR: SKILL.md missing 'name:' field"
+            exit 1
+          fi
+          # Check has description field
+          if ! grep -q '^description:' "$SKILL_FILE"; then
+            echo "ERROR: SKILL.md missing 'description:' field"
+            exit 1
+          fi
+          echo "SKILL.md frontmatter validation passed"
+
+  installer:
+    name: Installer Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify install.sh is valid bash
+        run: bash -n install.sh
+      - name: Verify install.py syntax
+        run: python3 -c "import py_compile; py_compile.compile('install.py', doraise=True)"

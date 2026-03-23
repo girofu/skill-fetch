@@ -1,0 +1,75 @@
+name: Bug Report
+description: Report a bug with skill-fetch
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: agent
+    attributes:
+      label: AI Coding Agent
+      description: Which agent are you using?
+      options:
+        - Claude Code
+        - Cursor
+        - Codex
+        - Gemini CLI
+        - Windsurf
+        - Amp
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: skill-fetch version
+      description: "Check .claude-plugin/plugin.json or CHANGELOG.md"
+      placeholder: "e.g., 1.3.3"
+    validations:
+      required: true
+  - type: input
+    id: query
+    attributes:
+      label: Search query
+      description: "What did you search for?"
+      placeholder: "e.g., react native animation"
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: true
+  - type: checkboxes
+    id: sources
+    attributes:
+      label: Affected search sources
+      description: Which sources had issues? (if applicable)
+      options:
+        - label: "1 - SkillsMP AI"
+        - label: "2 - SkillsMP Keyword"
+        - label: "3 - GitHub"
+        - label: "4 - Anthropic Skills"
+        - label: "5 - ClawhHub"
+        - label: "6 - skills.sh"
+        - label: "7 - PolySkill"
+        - label: "8 - SkillHub"
+        - label: "9 - Skills Directory"
+  - type: textarea
+    id: error
+    attributes:
+      label: Error messages
+      description: Paste any error messages or logs
+      render: shell
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "OS, Node.js version, etc."
+      placeholder: "macOS 15.3, Node.js 22.x"
