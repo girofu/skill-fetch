@@ -7,6 +7,7 @@ description: >
   PolySkill, SkillHub, Skills Directory) with multi-variant search, quality scoring,
   security labels, pagination, and local/global installation.
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "WebFetch", "shell", "read_file", "write_file", "execute_command", "fetch", "curl"]
+user-invocable: false
 ---
 
 # Skill Fetch
