@@ -25,5 +25,15 @@ if [ -z "$ENCODED_QUERY" ]; then
   ENCODED_QUERY=$(printf '%s' "$1" | tr ' ' '+')
 fi
 
-curl -s "https://www.skillsdirectory.com/api/v1/skills?q=${ENCODED_QUERY}&limit=5&securityGrade=A" \
-  -H "x-api-key: $KEY"
+RESPONSE=$(curl -s -w "\n%{http_code}" "https://www.skillsdirectory.com/api/v1/skills?q=${ENCODED_QUERY}&limit=5&securityGrade=A" \
+  -H "x-api-key: $KEY")
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" -ge 400 ]; then
+  echo "{\"data\":[],\"error\":\"Skills Directory API returned HTTP $HTTP_CODE\"}"
+  exit 1
+fi
+
+echo "$BODY"

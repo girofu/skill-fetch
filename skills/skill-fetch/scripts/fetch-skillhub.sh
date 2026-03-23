@@ -15,10 +15,17 @@ if [ -z "$KEY" ]; then
   exit 1
 fi
 
-# Safely JSON-encode the query string using node
-JSON_BODY=$(node -e "console.log(JSON.stringify({query:process.argv[1],limit:5,method:'hybrid'}))" "$1")
-
-curl -s -X POST "https://www.skillhub.club/api/v1/skills/search" \
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "https://www.skillhub.club/api/v1/skills/search" \
   -H "Authorization: Bearer $KEY" \
   -H "Content-Type: application/json" \
-  -d "$JSON_BODY"
+  -d "{\"query\": \"$1\", \"limit\": 5, \"method\": \"hybrid\"}")
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" -ge 400 ]; then
+  echo "{\"error\":\"SkillHub API returned HTTP $HTTP_CODE\"}"
+  exit 1
+fi
+
+echo "$BODY"
