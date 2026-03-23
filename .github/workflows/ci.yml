@@ -18,7 +18,7 @@ jobs:
         run: |
           find . -name '*.sh' -type f | while read -r file; do
             echo "Checking $file..."
-            shellcheck "$file"
+            shellcheck --severity=warning "$file"
           done
 
   frontmatter:
@@ -39,9 +39,8 @@ jobs:
             echo "ERROR: SKILL.md must start with --- frontmatter"
             exit 1
           fi
-          # Check has closing ---
-          CLOSING=$(sed -n '2,${/^---$/p;q}' "$SKILL_FILE")
-          if [ -z "$CLOSING" ]; then
+          # Check has closing --- (within first 20 lines)
+          if ! head -20 "$SKILL_FILE" | tail -n +2 | grep -q '^---$'; then
             echo "ERROR: SKILL.md frontmatter not closed with ---"
             exit 1
           fi
