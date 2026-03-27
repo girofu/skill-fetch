@@ -37,9 +37,11 @@ Choose the method that fits your setup:
 ### Option 1: Plugin (Best experience, Claude Code)
 
 ```bash
-# Add the marketplace and install
-/plugin marketplace add girofu/skill-fetch
-/plugin install skill-fetch
+# Add the skill-fetch marketplace
+claude plugin marketplace add girofu/skill-fetch
+
+# Install skill-fetch plugin
+claude plugin install skill-fetch@skill-fetch
 ```
 
 Provides auto-updates, `/fetch-skill` command, and full plugin integration.
