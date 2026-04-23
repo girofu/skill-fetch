@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "reportsDir": "reports",
+  "stateFile": ".github/maintainer/state.json",
+  "noMergeExternalPRs": true
+}
