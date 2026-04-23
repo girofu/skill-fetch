@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.1] - 2026-04-23
+
+### Fixed
+
+- **Partial skill downloads — install the directory, not the file**: Install logic previously hardcoded `SKILL.md` + `references/*.md` + `scripts/*.sh`, so skills shipping any other subdirs (`assets/`, `templates/`, `prompts/`, `data/`, `examples/`) or non-`.sh` scripts (`*.py`, `*.js`, `*.ts`) were installed with missing files and silently broken. Example: `anthropics/skills/skills/pdf` ships 9 Python scripts that were all dropped. The install flow now enumerates the full skill root via the git tree API and downloads every file, preserving the subtree layout.
+
+### Added
+
+- **`scripts/fetch-skill-bundle.sh`** — parses GitHub `blob`/`tree`/`raw.githubusercontent.com` URLs, enumerates the full skill root via `git/trees/{ref}?recursive=1`, and downloads every file preserving directory structure. When given a `SKILL.md` URL it auto-derives the parent dir as the skill root.
+- **`.github/maintainer/`** — per-repo state (config, context, decisions, patterns, standing rules, contributor notes, run ledger) for the `open-source-maintainer` triage workflow. No user-facing behavior change.
+
+### Changed
+
+- **`installation-guide.md` §3d** — GitHub source and Direct URL source (when pointing at a GitHub file) both use tree enumeration via the bundle helper instead of hardcoded subdirs/extensions. Direct URLs to GitHub files now bring sibling files along.
+- **SKILL.md Step 4 — "Digest the Installed Bundle"** — walks the full installed tree; verifies bundle completeness against relative paths referenced by SKILL.md.
+- **Security scan scope** — `find -type f` walks the complete bundle. Categories now apply to `*.md` throughout the tree (A-F), `*.sh`/`*.bash`/`*.zsh`/`*.py`/`*.js`/`*.ts` (A-E), and `*.json`/`*.yaml`/`*.toml` (D, F).
+- **Integrity hashing** — SHA-256 recorded for every file in the installed bundle, not just `SKILL.md` + `references/*.md` + `scripts/*.sh`.
+
 ## [1.4.0] - 2026-03-23
 
 ### Added

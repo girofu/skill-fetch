@@ -24,11 +24,12 @@ Search, score, and install AI agent skills from **9 registries** in parallel —
 - **Security Labels** — 5 trust tiers: Official, Verified, Partial, Unverified, Security Concerns
 - **6-Category Security Scan** — Destructive commands, RCE, data exfiltration, system modification, obfuscation, prompt injection
 - **Prompt Injection Detection** — 5 sub-categories (PI-1~PI-5): direct override, hidden role markers, encoding tricks, indirect injection, social engineering
-- **Integrity Verification** — SHA-256 hash recorded at install, tamper detection on future loads
+- **Complete Bundle Install** — Downloads the whole skill directory (SKILL.md + `references/`, `scripts/`, `assets/`, `templates/`, `prompts/`, `data/`, etc.), preserving the subtree layout so skills that delegate to sibling files actually work
+- **Integrity Verification** — SHA-256 hash recorded for every file in the bundle at install; tamper detection on future loads
 - **Paginated Results** — Browse 5 at a time with `c` to continue; install by number from any page
 - **Local/Global Install** — Choose project-level or user-level installation (mandatory prompt)
 - **Deduplication** — Same skill across registries is merged; similar descriptions are flagged
-- **Bundled API Scripts** — Pre-built shell scripts for SkillHub and Skills Directory APIs (no API key exposure)
+- **Bundled Scripts** — Shell scripts for SkillHub and Skills Directory APIs (no API key exposure in argv) plus `fetch-skill-bundle.sh` for full-bundle GitHub installs
 
 ## Installation
 
@@ -311,10 +312,15 @@ skill-fetch/
 │       │   ├── search-sources.md     # Source-specific commands & dedup rules
 │       │   ├── quality-signals.md    # Scoring algorithm + security labels
 │       │   ├── interaction-patterns.md # Output templates, security scan, prompt injection
-│       │   └── platform-adapters.md  # Cross-platform tool mapping
+│       │   ├── platform-adapters.md  # Cross-platform tool mapping
+│       │   ├── installation-guide.md # Complete Step 3 install workflow
+│       │   └── local-index.md        # Local skill/plugin scan for pre-search dedup
 │       └── scripts/
-│           ├── fetch-skillhub.sh     # SkillHub API search (reads key from config)
+│           ├── fetch-skill-bundle.sh    # Download a complete skill bundle from GitHub (SKILL.md + all siblings)
+│           ├── fetch-skillhub.sh        # SkillHub API search (reads key from config)
 │           └── fetch-skills-directory.sh # Skills Directory API search
+├── .github/
+│   └── maintainer/                   # Per-repo state for open-source-maintainer workflow
 ├── install.sh                        # Universal bash installer
 ├── install.py                        # Python installer
 ├── CHANGELOG.md                      # Version history
