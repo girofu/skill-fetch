@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.2] - 2026-04-23
+
+### Fixed
+
+- **SkillsMP MCP shadow bug (plugin installs)**: v1.4.1 shipped a `.mcp.json` at repo root that registered a project-scope `skillsmp` MCP server with no `SKILLSMP_API_KEY`. Because the entire repo is the plugin payload (`marketplace.json` → `source: "./"`), every plugin-installed user had this keyless server override their user-scope `skillsmp` registration (where the API key lives), causing SkillsMP semantic + keyword search (Sources 1-2) to silently fail. Fix: remove `.mcp.json`. Users should register the server once at user scope via `claude mcp add --scope user skillsmp -- npx -y skillsmp-mcp-server --env SKILLSMP_API_KEY=...` (or run `/fetch-skill-config`). `npx skills add` / `install.sh` / `install.py` install paths were unaffected — they only copy `skills/skill-fetch/*`, not repo-root files.
+
 ## [1.4.1] - 2026-04-23
 
 ### Fixed
