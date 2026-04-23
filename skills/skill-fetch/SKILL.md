@@ -145,19 +145,21 @@ See `references/installation-guide.md` for the complete installation workflow.
 1. **3a.** Display sorted results (5 per page, score + pros/cons)
 2. **3b.** Wait for user reply (number to install, `c` for next page, `skip` to end)
 3. **3c.** Ask installation location (G=global, L=local) — MANDATORY
-4. **3d.** Execute installation (SkillsMP → trust-but-verify, GitHub → pre-install scan)
-5. **3e.** Post-install verification (file existence, frontmatter, conflict check, SHA-256)
+4. **3d.** Execute installation (SkillsMP → trust-but-verify, GitHub → **fetch the full bundle**, not just SKILL.md, then pre-install scan every file). Use `scripts/fetch-skill-bundle.sh` for GitHub URLs.
+5. **3e.** Post-install verification (file existence, frontmatter, conflict check, **bundle completeness**, SHA-256 on every installed file)
 6. **3f.** Update `~/.claude/skills/.fetch-metadata.json`
 7. **3g.** Activate and confirm with user
 
-### Step 4: Digest Reference Materials
+> **⚠️ Critical:** When installing from GitHub, the skill is its entire directory — `SKILL.md` plus `references/`, `scripts/`, `assets/`, `templates/`, `prompts/`, `data/`, etc. Downloading only `SKILL.md` will produce a broken install for any skill that delegates to those files. Always fetch the complete bundle.
 
-Installed skills may contain a `references/` subdirectory.
+### Step 4: Digest the Installed Bundle
 
-1. Use Glob to check for `references/`
-2. Only read files **directly relevant to the current task** (check first 30 lines for relevance)
-3. Summarize key knowledge for use in subsequent planning
-4. Skip if no `references/` exists
+An installed skill is a **directory**, not a single `SKILL.md`. Many skills split their content across subdirectories — `references/` (docs), `scripts/` (helpers), `assets/`, `templates/`, `prompts/`, `data/`, `examples/`, etc. If you only read `SKILL.md` you may miss instructions the skill author expects you to load on demand.
+
+1. Use Glob to list the full installed tree: `{install-path}/{skill-name}/**/*`.
+2. **Verify bundle completeness.** If SKILL.md references relative paths (`bash scripts/foo.sh`, `See references/bar.md`, `Load assets/template.json`) and those files are missing, the install is incomplete — re-run the GitHub bundle fetch (see `references/installation-guide.md` §3d).
+3. Read files **directly relevant to the current task** (check the first 30 lines for relevance). Don't limit this to `references/` — the relevant file may live under `prompts/`, `templates/`, or another subdir.
+4. Summarize key knowledge for use in subsequent planning.
 
 After completion, output: `External skill installed successfully: {skill-name}`
 
@@ -178,3 +180,4 @@ After completion, output: `External skill installed successfully: {skill-name}`
 - **`references/local-index.md`** — Local skill/plugin scan implementation for pre-search deduplication
 - **`scripts/fetch-skillhub.sh`** — SkillHub API search (reads key from `~/.claude/skills/.fetch-config.json`)
 - **`scripts/fetch-skills-directory.sh`** — Skills Directory API search (reads key from config)
+- **`scripts/fetch-skill-bundle.sh`** — Download a complete skill bundle (SKILL.md + all sibling files/subdirs) from any GitHub `blob`/`tree`/`raw` URL, preserving directory layout
