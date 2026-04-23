@@ -1,6 +1,0 @@
-{
-  "skillsmp": {
-    "command": "npx",
-    "args": ["-y", "skillsmp-mcp-server"]
-  }
-}

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Removed
+
+- **`.mcp.json`** — Removed to avoid shadowing the user-scope `skillsmp` MCP registration. The committed project-scope file could not carry `SKILLSMP_API_KEY` (public repo), and because project-scope `.mcp.json` takes precedence over user scope, it caused a second, keyless `skillsmp` server to supersede the properly-configured one registered via `claude mcp add --scope user`. Users should follow the README's SkillsMP setup (or run `/fetch-skill-config`) to register the MCP server with their API key.
+
 ## [1.4.1] - 2026-04-23
 
 ### Fixed
