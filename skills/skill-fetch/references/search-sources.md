@@ -218,7 +218,9 @@ After installation, record metadata in `~/.claude/skills/.fetch-metadata.json`:
       "algorithm": "sha256",
       "files": {
         "SKILL.md": "<sha256-hash>",
-        "references/example.md": "<sha256-hash>"
+        "references/example.md": "<sha256-hash>",
+        "scripts/helper.sh": "<sha256-hash>",
+        "assets/diagram.svg": "<sha256-hash>"
       }
     },
     "securityLabel": "Official|Verified|Partial|Unverified|Security Concerns",
