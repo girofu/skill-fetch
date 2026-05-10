@@ -339,6 +339,12 @@ skill-fetch/
 - Node.js for npx-based searches (ClawSkillHub, PolySkill, SkillHub CLI)
 - `~/.claude/skills/.fetch-config.json` for SkillHub and Skills Directory APIs (optional)
 
+## Author
+
+Built by [**girofu**](https://github.com/girofu) — AI engineering portfolio at [github.com/girofu](https://github.com/girofu).
+
+For private portfolio walkthroughs or contracting inquiries: [girofu@gmail.com](mailto:girofu@gmail.com)
+
 ## License
 
 MIT
