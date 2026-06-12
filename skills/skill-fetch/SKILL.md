@@ -3,7 +3,7 @@ name: skill-fetch
 description: >
   This skill should be used when the user asks to "fetch skill", "install skill",
   "search for a skill", or when a hook outputs "MISSING EXTERNAL SKILL".
-  Searches 9 registries (SkillsMP, GitHub, Anthropic Skills, ClawSkillHub, skills.sh,
+  Searches 9 registries (SkillsMP, GitHub, Anthropic Skills, ClawHub, skills.sh,
   PolySkill, SkillHub, Skills Directory) with multi-variant search, quality scoring,
   security labels, pagination, and local/global installation.
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "WebFetch", "shell", "read_file", "write_file", "execute_command", "fetch", "curl"]
@@ -80,7 +80,7 @@ Sources 8-9 require API keys. Read the config file to determine availability:
 
 **⚠️ MANDATORY: You MUST fire ALL 9 sources. Do NOT proceed to scoring until all 9 sources have returned or failed.**
 
-**⚠️ COMMON FAILURE MODE: LLM fires sources 1-2 (SkillsMP), gets results, then skips sources 3-9. This is WRONG. SkillsMP results alone are insufficient — GitHub, ClawhHub, skills.sh, and PolySkill contain different skills not indexed by SkillsMP.**
+**⚠️ COMMON FAILURE MODE: LLM fires sources 1-2 (SkillsMP), gets results, then skips sources 3-9. This is WRONG. SkillsMP results alone are insufficient — GitHub, ClawHub, skills.sh, and PolySkill contain different skills not indexed by SkillsMP.**
 
 **⚠️ EXECUTION ORDER: You MUST complete BOTH Step 2a AND Step 2b before proceeding to Step 2.5. Step 2a alone is NOT sufficient.**
 
@@ -99,7 +99,7 @@ Sources 8-9 require API keys. Read the config file to determine availability:
 |---|--------|-----------|----------|
 | 3 | **GitHub repos** | `gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt --limit 5 --sort stars` (do NOT append "skill SKILL.md") | `gh search code "{query}" --filename SKILL.md --limit 5` |
 | 4 | **Anthropic Skills** | `gh search code "{query}" --repo anthropics/skills --filename SKILL.md --limit 5` | `gh api` tree fallback |
-| 5 | **ClawhHub** | `npx -y clawhub search "{query}"` | Skip on failure |
+| 5 | **ClawHub** | `npx -y clawhub search "{query}"` | Skip on failure |
 | 6 | **skills.sh** | `WebFetch("https://skills.sh/api/search?q={query}&limit=5")` | `curl -s` via Bash |
 | 7 | **PolySkill** | `npx -y @polyskill/cli search "{single_keyword}" --limit 5` (extract most specific single keyword from query — multi-word queries return 0) | Skip on failure (no REST API) |
 | 8 | **SkillHub** | If `HAS_SKILLHUB_KEY` = true (from Step 0.5): `bash {SKILL_BASE_DIR}/scripts/fetch-skillhub.sh "{query}"`. If false: `npx -y @skill-hub/cli search "{query}" --limit 5` (timeout: 10000) | CLI fallback on failure |
@@ -114,7 +114,7 @@ Sources 8-9 require API keys. Read the config file to determine availability:
 Before scoring, output this checklist with actual status for EVERY source:
 ```
 Step 0.5 config: HAS_SKILLHUB_KEY={true/false} HAS_SKILLS_DIR_KEY={true/false}
-Sources queried: [1] SkillsMP AI ✅ [2] SkillsMP KW ✅ [3] GitHub ✅/❌ [4] Anthropic ✅/❌ [5] ClawhHub ✅/❌ [6] skills.sh ✅/❌ [7] PolySkill ✅/❌ [8] SkillHub ✅/❌ [9] Skills Dir ✅/❌
+Sources queried: [1] SkillsMP AI ✅ [2] SkillsMP KW ✅ [3] GitHub ✅/❌ [4] Anthropic ✅/❌ [5] ClawHub ✅/❌ [6] skills.sh ✅/❌ [7] PolySkill ✅/❌ [8] SkillHub ✅/❌ [9] Skills Dir ✅/❌
 ```
 
 **Validation rules — go back and fix before proceeding:**

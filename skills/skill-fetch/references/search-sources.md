@@ -48,31 +48,7 @@ gh search repos "{query}" --json name,description,url,stargazersCount,updatedAt 
 
 Run both commands in parallel. If code search returns collection repos (e.g., awesome-agent-skills), use `gh api` to search their tree for SKILL.md files containing `{query}`.
 
-## Source 4: ClawSkillHub
-
-```bash
-npx -y clawhub search "{query}"
-```
-
-Returns slug, description. Skip this source if npx fails.
-
-## Source 5: skills.sh
-
-**WebFetch (preferred):**
-```
-WebFetch("https://skills.sh/api/search?q={query}&limit=5",
-         prompt="Extract skill names, sources (owner/repo), install counts, and URLs from the JSON response")
-```
-
-Returns JSON `{ skills: [{ name, source, installs, id }] }`. Each result URL is `https://skills.sh/{id}`.
-Skip this source if the API returns an error or times out.
-
-**curl fallback** (when WebFetch is unavailable):
-```bash
-curl -s "https://skills.sh/api/search?q={query}&limit=5"
-```
-
-## Source 6: Anthropic Skills (GitHub)
+## Source 4: Anthropic Skills (GitHub)
 
 Search the official Anthropic skills repo ([github.com/anthropics/skills](https://github.com/anthropics/skills)). Skip silently if the repo is unavailable or the command fails.
 
@@ -87,6 +63,32 @@ gh api repos/anthropics/skills/git/trees/main?recursive=1 --jq '.tree[].path | s
 Then filter paths by `{query}` keyword match.
 
 **Response format:** Path list, each corresponding to a skill (e.g., `skills/pdf/SKILL.md`).
+
+## Source 5: ClawHub
+
+```bash
+npx -y clawhub search "{query}"
+```
+
+Returns slug and description. Skip this source if npx fails.
+
+Run exact package names and broader task terms when the user asks for an OpenClaw plugin or agent tool. For example, try both `@xquik/tweetclaw` and `tweet scraper`, or both `OpenClaw plugin` and the package name supplied by the user.
+
+## Source 6: skills.sh
+
+**WebFetch (preferred):**
+```
+WebFetch("https://skills.sh/api/search?q={query}&limit=5",
+         prompt="Extract skill names, sources (owner/repo), install counts, and URLs from the JSON response")
+```
+
+Returns JSON `{ skills: [{ name, source, installs, id }] }`. Each result URL is `https://skills.sh/{id}`.
+Skip this source if the API returns an error or times out.
+
+**curl fallback** (when WebFetch is unavailable):
+```bash
+curl -s "https://skills.sh/api/search?q={query}&limit=5"
+```
 
 ## Source 7: PolySkill
 

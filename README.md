@@ -12,12 +12,12 @@ Search, score, and install AI agent skills from **9 registries** in parallel —
 ## Quick Start
 
 1. **Install** — pick any method from [Installation](#installation) below
-2. **Set up API keys** — run `/fetch-skill-config` (interactive, recommended) or [configure manually](#️-setup-api-keys)
+2. **Set up API keys** — run `/fetch-skill-config` (interactive, recommended) or [configure manually](#setup-api-keys)
 3. **Search & install skills** — `/fetch-skill react native animation`
 
 ## Features
 
-- **9 Search Sources** — SkillsMP (semantic + keyword), GitHub, Anthropic Skills, ClawSkillHub, skills.sh, PolySkill, SkillHub, Skills Directory
+- **9 Search Sources** — SkillsMP (semantic + keyword), GitHub, Anthropic Skills, ClawHub, skills.sh, PolySkill, SkillHub, Skills Directory
 - **Cross-Platform** — Works on 6+ AI coding agents with automatic tool adaptation
 - **Multi-Variant AI Search** — 3 query variants fired in parallel, improving recall significantly
 - **Quality Scoring** — 0-100 composite score: Relevance (40) + Freshness (25) + Community (20) + Trust (15) + External Bonus (5)
@@ -93,7 +93,7 @@ cp -r skill-fetch/skills/skill-fetch ~/.cursor/skills/skill-fetch
 # Other agents: replace ~/.cursor/ with ~/.codex/, ~/.gemini/, ~/.windsurf/, or ~/.amp/
 ```
 
-## ⚙️ Setup API Keys
+## Setup API Keys
 
 > **Important:** API keys unlock the full 9-source search. Without them, only Sources 3-8 are available (still useful, but fewer results).
 
@@ -186,7 +186,7 @@ In other agents, the skill activates automatically when referenced in context.
    └───────┬───────┘    └────────┬────────┘
            │                     │
    ┌───────┴───────┐    ┌───────┴────────┐
-   │  ClawSkillHub │    │  skills.sh     │
+   │  ClawHub      │    │  skills.sh     │
    └───────┬───────┘    └───────┬────────┘
            │                     │
    ┌───────┴───────┐    ┌───────┴────────┐
@@ -229,7 +229,7 @@ In other agents, the skill activates automatically when referenced in context.
 | 2 | SkillsMP (keyword) | `skillsmp_search` MCP | Primary | Claude Code + MCP |
 | 3 | GitHub | `gh search code --filename SKILL.md` (primary) + `gh search repos` (supplementary) | Primary | All agents |
 | 4 | Anthropic Skills | `gh search code` in `anthropics/skills` | Official | All agents |
-| 5 | ClawSkillHub | `npx -y clawhub search` | Supplementary | Agents with npx |
+| 5 | ClawHub | `npx -y clawhub search` | Supplementary | Agents with npx |
 | 6 | skills.sh | HTTP API / WebFetch | Supplementary | All agents |
 | 7 | PolySkill | `npx -y @polyskill/cli search` (single keyword) | Supplementary | Agents with npx |
 | 8 | SkillHub | Bundled shell script (API) or CLI fallback | Supplementary | All agents |
@@ -239,7 +239,7 @@ All sources are searched **in parallel**. Sources fail gracefully — if any is 
 
 ## API Key Setup
 
-> See [⚙️ Setup API Keys](#️-setup-api-keys) above for detailed instructions.
+> See [Setup API Keys](#setup-api-keys) above for detailed instructions.
 
 ## Quality Scoring
 
@@ -336,7 +336,7 @@ skill-fetch/
 **Full experience (Claude Code):**
 - SkillsMP MCP server + API key from [skillsmp.com](https://skillsmp.com) (see [API Key Setup](#api-key-setup))
 - GitHub CLI (`gh`) for GitHub and Anthropic Skills search
-- Node.js for npx-based searches (ClawSkillHub, PolySkill, SkillHub CLI)
+- Node.js for npx-based searches (ClawHub, PolySkill, SkillHub CLI)
 - `~/.claude/skills/.fetch-config.json` for SkillHub and Skills Directory APIs (optional)
 
 ## Author
