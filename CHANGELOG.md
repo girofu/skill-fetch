@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Corrected ClawHub naming in search-source documentation and aligned the detailed source order with the 9-source table.
+- Added ClawHub query guidance for exact package names and broader OpenClaw plugin or agent-tool task terms.
+- Fixed README API key setup anchors so local Markdown link checks pass.
+
 ## [1.4.2] - 2026-04-23
 
 ### Fixed
