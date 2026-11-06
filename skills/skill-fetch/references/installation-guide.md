@@ -98,12 +98,20 @@ Before installing, ask the user for installation scope (if not already specified
 
 #### 3d. Execute Installation
 
-**SkillsMP source (trust-but-verify):**
-1. Use `skillsmp_install_skill` to install. If it doesn't support the target path: use `skillsmp_get_skill_content` to get content → write to target path.
-2. **Post-install security scan**: Read the installed `SKILL.md` + `references/` + `scripts/` (if present)
-3. Execute security review (Categories A-F per `references/interaction-patterns.md`)
-4. Findings found → warn user with details, offer `confirm install` to keep or `remove` to uninstall
-5. Clean scan → continue to verification
+**SkillsMP source (stage, scan, then install):**
+1. **Stage, don't install.** Resolve the skill's GitHub URL from the SkillsMP result and fetch the full bundle into a
+   staging directory outside every skills directory (`mktemp -d`) with the GitHub-source helper below. Only if no
+   repository URL is available, use `skillsmp_get_skill_content` and write the content into the staging directory.
+   Do not call `skillsmp_install_skill` yet: it writes straight into a directory the agent loads from.
+2. **Pre-install security scan**: scan every staged file (Categories A-F per `references/interaction-patterns.md`),
+   as in the Safety Gate in SKILL.md.
+3. Findings found → warn user with details, offer `confirm install` to continue or `skip` to discard the staging directory
+4. Clean scan, or the user confirms → move the staged files to the target path (or run `skillsmp_install_skill` if it
+   supports that path), then delete the staging directory and continue to verification
+
+**MCP server (any source, including the SkillsMP MCP in Step 0):** review it before registering, per step 3 of the
+Safety Gate in SKILL.md: source, pinned version, install scripts, tool reach, credentials and hosts. Show the result and
+wait for `confirm install`. Register the pinned version (`claude mcp add ... -- npx pkg@1.2.3`, not `npx -y pkg`).
 
 **GitHub source (MANDATORY: fetch the full skill bundle, not just SKILL.md):**
 
