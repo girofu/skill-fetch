@@ -137,6 +137,31 @@ Calculate a quality score (0-100) for each deduplicated result. See `references/
 
 **Grade labels:** `🟢 85+` Strongly Recommended | `🟢 70-84` Recommended | `🟡 55-69` Worth Considering | `🟡 40-54` Marginal | `🔴 <40` Not Recommended
 
+### Safety Gate: Scan Before Installing (skills and MCP servers)
+
+Anything from a third-party registry is untrusted until it has been scanned. An installed skill or MCP server runs
+with your agent's permissions, so scan **before** it lands in a place the agent loads from. Apply this gate to every
+install in Step 3 and to every MCP server this skill would register (including the SkillsMP MCP in Step 0).
+
+1. **Stage first.** Download into a fresh temp directory outside every skills directory (`mktemp -d`), never directly
+   into `~/.claude/skills/`, `.claude/skills/` or a plugin directory. Nothing in staging is loaded or run.
+2. **Scan the whole bundle.** Every file, Categories A-F (see `references/interaction-patterns.md`). Also check what
+   loads or runs without a prompt: SKILL.md frontmatter (`allowed-tools`, `hooks`), bundled `.mcp.json` and hook
+   configs, and any `scripts/` the skill tells the agent to run.
+3. **Review an MCP server before registering it** (`claude mcp add`, `.mcp.json` or any config edit):
+   - Source: the repository and package owner, last release, and whether the npm/PyPI package matches the repo it
+     claims to come from.
+   - Version: register an exact version (`pkg@1.2.3`), not `npx -y pkg` or `@latest`.
+   - Install scripts: read `postinstall` / `setup.py` or equivalent before anything executes.
+   - Tools: list what each tool can do (read, write, delete, execute) and drop servers whose reach exceeds the task.
+   - Credentials and network: which keys it needs (use a narrowly scoped key, never a broader one) and which hosts it
+     contacts.
+4. **Show the result and wait.** Report findings as file, category, severity (or "no findings"). A clean scan lowers
+   risk but does not prove safety. Critical findings (A, B) block the install; anything else needs the user's explicit
+   `confirm install`. The LLM must never confirm for the user.
+5. **Then install.** Move the staged files to the location chosen in 3c (or register the pinned MCP server), record
+   SHA-256 (3e), and delete the staging directory. If the bundle cannot be fetched or scanned in full, do not install.
+
 ### Step 3: Analyze, Select, Install
 
 See `references/installation-guide.md` for the complete installation workflow.
@@ -145,7 +170,7 @@ See `references/installation-guide.md` for the complete installation workflow.
 1. **3a.** Display sorted results (5 per page, score + pros/cons)
 2. **3b.** Wait for user reply (number to install, `c` for next page, `skip` to end)
 3. **3c.** Ask installation location (G=global, L=local) — MANDATORY
-4. **3d.** Execute installation (SkillsMP → trust-but-verify, GitHub → **fetch the full bundle**, not just SKILL.md, then pre-install scan every file). Use `scripts/fetch-skill-bundle.sh` for GitHub URLs.
+4. **3d.** Execute installation through the Safety Gate above (stage → scan → install; SkillsMP and GitHub alike, GitHub → **fetch the full bundle**, not just SKILL.md, then scan every file before moving it into place). Use `scripts/fetch-skill-bundle.sh` for GitHub URLs.
 5. **3e.** Post-install verification (file existence, frontmatter, conflict check, **bundle completeness**, SHA-256 on every installed file)
 6. **3f.** Update `~/.claude/skills/.fetch-metadata.json`
 7. **3g.** Activate and confirm with user

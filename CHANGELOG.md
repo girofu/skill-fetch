@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Scan before install (skills and MCP servers)**: New "Safety Gate" section in SKILL.md. Skills are staged in a temp
+  directory outside every skills directory and scanned (Categories A-F) before they are moved into place; MCP servers
+  are reviewed (source, pinned version, install scripts, tool reach, credentials and hosts) before they are registered.
+- **SkillsMP install flow**: `installation-guide.md` §3d no longer installs first and scans afterwards (trust-but-verify);
+  it stages, scans, then installs.
+- README "6-Category Security Scan" now says scanning happens before installation.
+
 ## [1.4.2] - 2026-04-23
 
 ### Fixed

@@ -277,7 +277,7 @@ Each result receives a composite score (0-100):
 
 ### 6-Category Security Scan
 
-All skills are scanned before (or immediately after) installation:
+All skills are staged outside the skills directory and scanned before installation; MCP servers are reviewed (source, pinned version, install scripts, tool reach, credentials) before they are registered:
 
 | Category | Name | Severity |
 |----------|------|----------|
